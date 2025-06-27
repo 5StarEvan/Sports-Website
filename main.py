@@ -3,7 +3,7 @@ import numpy as np
 from nba_api.stats.endpoints import playercareerstats, commonplayerinfo, leaguedashplayerstats
 from nba_api.stats.static import players
 from datetime import datetime
-#import AIChoices
+import AIChoices
 
 def read_favourite_players(filename='FavouritePlayers.txt'):
     favourite_players = []
