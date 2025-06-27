@@ -5,6 +5,7 @@ from nba_api.stats.static import players
 from datetime import datetime
 import AIChoices
 
+
 def read_favourite_players(filename='FavouritePlayers.txt'):
     favourite_players = []
     try:
@@ -119,10 +120,17 @@ def get_top_nba_players_by_stat(stat, top_n=10):
     player_name_index = headers.index('PLAYER_NAME')
     gp_index = headers.index('GP')
     # Calculate per-game value for each player
-    rows_with_per_game = [
-        (x, round(x[stat_index]/x[gp_index], 2) if x[gp_index] else 0)
-        for x in rows
-    ]
+
+    if stat != "FG_PCT":
+        rows_with_per_game = [
+            (x, round(x[stat_index]/x[gp_index], 2) if x[gp_index] else 0)
+            for x in rows
+        ]
+    else:
+        rows_with_per_game = [
+            (x, round(x[stat_index]*100, 2) if x[gp_index] else 0)
+            for x in rows
+        ]
     # Sort by per-game value
     top_rows = sorted(rows_with_per_game, key=lambda tup: tup[1], reverse=True)[:top_n]
     return [{
@@ -192,8 +200,8 @@ if __name__ == "__main__":
         if obj:
             player_objects.append(obj)
 
-    print_top_nba_players_by_stat('bpg', 10)
-    topList = AIChoices.getAIPicks()
+    print_top_nba_players_by_stat('fgptc', 10)
+    #topList = AIChoices.getAIPicks()
 
     # for name in topList:
     #     print(name)
