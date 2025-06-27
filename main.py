@@ -194,6 +194,7 @@ if __name__ == "__main__":
 
     print_top_nba_players_by_stat('bpg', 10)
     topList = AIChoices.getAIPicks()
+    
 
     for name in topList:
         print(name)
