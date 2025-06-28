@@ -200,7 +200,7 @@ if __name__ == "__main__":
         if obj:
             player_objects.append(obj)
 
-    print_top_nba_players_by_stat('fgptc', 10)
+    print_top_nba_players_by_stat('ppg', 10)
     #topList = AIChoices.getAIPicks()
 
     # for name in topList:
