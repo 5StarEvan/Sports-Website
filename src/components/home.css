@@ -675,3 +675,240 @@ body {
     transform: translateY(50px);
   }
 }
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #fff 50%, #000 50%);
+  color: #222;
+  padding: 3rem 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.hero-image {
+  width: 120px;
+  height: 120px;
+  background: #eee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin: 0.5rem 0;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.stats-section, .recommendations-section, .favourites-section {
+  background: #fafafa;
+  border-radius: 0.75rem;
+  padding: 2rem 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.stats-section h2, .recommendations-section h2, .favourites-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #222;
+}
+
+.stats-placeholder, .recommendations-placeholder, .favourites-placeholder {
+  min-height: 80px;
+  background: #e0e0e0;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+}
+
+.main-wrapper {
+  min-height: 100vh;
+  background: #fff;
+  font-family: 'Oswald', Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem 0.5rem 2.5rem;
+  border-bottom: 3px solid #111;
+  background: #fff;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.basketball-icon {
+  font-size: 1.7rem;
+}
+.header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-family: inherit;
+  color: #111 !important;
+}
+.header-nav {
+  display: flex;
+  gap: 2.5rem;
+}
+.header-nav a {
+  color: #fff;
+  background: #111;
+  padding: 0.3rem 1.2rem;
+  border-radius: 0.2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  transition: background 0.2s, color 0.2s;
+}
+.header-nav a:hover {
+  background: #e53935;
+  color: #fff;
+  border-bottom: 2px solid #e53935;
+}
+.header-profile {
+  display: flex;
+  align-items: center;
+}
+.profile-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #111;
+}
+
+.profile-icon, .profile-inner {
+  display: none !important;
+}
+
+.hero-split-bg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(90deg, #fff 50%, #000 50%);
+  position: relative;
+}
+
+.hero-center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.hero-image-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 800px;
+  height: 500px;
+  margin-bottom: 0;
+  z-index: 2;
+  position: relative;
+}
+.hero-image-center img {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hero-title {
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: slideUpFadeIn 1.2s cubic-bezier(0.23, 1, 0.32, 1) 0.2s forwards;
+}
+
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 40%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+.hero-title .highlight {
+  color: #e53935;
+}
+
+.black-word {
+  color: #111 !important;
+}
+
+.hero-images, .hero-image-left, .hero-image-right {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .hero-image-center {
+    width: 95vw;
+    height: 200px;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
+}
