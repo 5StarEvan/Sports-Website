@@ -3,10 +3,16 @@ import numpy as np
 from nba_api.stats.endpoints import playercareerstats, commonplayerinfo, leaguedashplayerstats
 from nba_api.stats.static import players
 from datetime import datetime
-import AIChoices
 
+# Import AI predictions module
+try:
+    from ai_predictions import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_outlook
+    AI_AVAILABLE = True
+except ImportError:
+    print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
+    AI_AVAILABLE = False
 
-def read_favourite_players(filename='FavouritePlayers.txt'):
+def read_favourite_players(filename='Backend/FavouritePlayers.txt'):
     favourite_players = []
     try:
         with open(filename, 'r') as file:
@@ -191,6 +197,43 @@ def print_top_nba_players_by_stat(stat, top_n=10):
     for player in topArray:
         print(player['name'], player['value'])
 
+def get_ai_predictions():
+    """Get AI predictions for top performers and breakout players"""
+    if not AI_AVAILABLE:
+        return {
+            'error': 'AI predictions not available. Please install PyTorch dependencies.',
+            'top_scorers': [],
+            'top_assists': [],
+            'top_rebounders': [],
+            'breakout_players': []
+        }
+    
+    try:
+        return {
+            'top_scorers': get_top_scorers(10),
+            'top_assists': get_top_assists(10),
+            'top_rebounders': get_top_rebounders(10),
+            'breakout_players': get_breakout_players(10)
+        }
+    except Exception as e:
+        return {
+            'error': f'Error getting AI predictions: {str(e)}',
+            'top_scorers': [],
+            'top_assists': [],
+            'top_rebounders': [],
+            'breakout_players': []
+        }
+
+def get_ai_player_prediction(player_name):
+    """Get AI prediction for a specific player"""
+    if not AI_AVAILABLE:
+        return {'error': 'AI predictions not available. Please install PyTorch dependencies.'}
+    
+    try:
+        return get_player_outlook(player_name)
+    except Exception as e:
+        return {'error': f'Error getting prediction for {player_name}: {str(e)}'}
+
 # Main execution
 if __name__ == "__main__":
     favouritePlayers = read_favourite_players()
@@ -200,9 +243,26 @@ if __name__ == "__main__":
         if obj:
             player_objects.append(obj)
 
+    print("=== CURRENT TOP PLAYERS ===")
     print_top_nba_players_by_stat('ppg', 10)
+    
+    print("\n=== AI PREDICTIONS ===")
+    if AI_AVAILABLE:
+        ai_predictions = get_ai_predictions()
+        if 'error' not in ai_predictions:
+            print("\nTop 5 AI Predicted Scorers:")
+            for scorer in ai_predictions['top_scorers'][:5]:
+                print(f"{scorer['rank']}. {scorer['name']} ({scorer['team']}) - {scorer['predicted_value']} PPG")
+            
+            print("\nTop 5 AI Predicted Breakout Players:")
+            for breakout in ai_predictions['breakout_players'][:5]:
+                print(f"{breakout['rank']}. {breakout['name']} ({breakout['team']}) - {breakout['total_improvement']}% improvement")
+        else:
+            print(f"AI Error: {ai_predictions['error']}")
+    else:
+        print("AI predictions not available. Run 'pip install -r requirements_pytorch.txt' to enable AI features.")
+    
     #topList = AIChoices.getAIPicks()
-
     # for name in topList:
     #     print(name)
 
