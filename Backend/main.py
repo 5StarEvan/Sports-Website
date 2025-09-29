@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Import AI predictions module
 try:
-    from ai_predictions import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_outlook
+    from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
     AI_AVAILABLE = True
 except ImportError:
     print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
@@ -230,7 +230,7 @@ def get_ai_player_prediction(player_name):
         return {'error': 'AI predictions not available. Please install PyTorch dependencies.'}
     
     try:
-        return get_player_outlook(player_name)
+        return get_player_prediction(player_name)
     except Exception as e:
         return {'error': f'Error getting prediction for {player_name}: {str(e)}'}
 
