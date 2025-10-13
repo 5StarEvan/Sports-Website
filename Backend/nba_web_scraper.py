@@ -399,9 +399,9 @@ class NBAWebScraper:
                 base_apg = player.get('apg', 8.2)
                 base_rpg = player.get('rpg', 7.8)
             else:
-                base_ppg = np.random.normal(12, 6) * point_mod * age_mod
-                base_apg = np.random.normal(3, 2) * assist_mod * age_mod
-                base_rpg = np.random.normal(5, 3) * rebound_mod * age_mod
+            base_ppg = np.random.normal(12, 6) * point_mod * age_mod
+            base_apg = np.random.normal(3, 2) * assist_mod * age_mod
+            base_rpg = np.random.normal(5, 3) * rebound_mod * age_mod
             
             player_data = {
                 'PLAYER_ID': 20000000 + i,

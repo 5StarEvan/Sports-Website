@@ -759,6 +759,15 @@ body {
   font-family: 'Oswald', Arial, sans-serif;
 }
 
+/* Visibility overrides to avoid dark-on-dark blank feel when backend is down */
+.ai-section {
+  background: #fff !important;
+  color: #111;
+}
+.main-wrapper {
+  color: #111;
+}
+
 .header {
   display: flex;
   align-items: center;
