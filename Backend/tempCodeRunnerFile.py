@@ -19,7 +19,7 @@ except ImportError:
     AI_AVAILABLE = False
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})  # Enable CORS for all routes
+CORS(app)  # Enable CORS for all routes
 
 # Global variable to store NBA data
 nba_data = None
@@ -40,50 +40,16 @@ def load_nba_data():
         return False
 
 def get_player_stats_summary(player_data):
-    """Convert player data to a more readable format"""
-    
-    # Calculate actual trends from current vs previous season
-    ppg_current = player_data.get('PPG_LAST', player_data.get('ppg_last', 0))
-    ppg_prev = player_data.get('PPG_PREV', player_data.get('ppg_prev', ppg_current))
-    ppg_trend = round(ppg_current - ppg_prev, 2) if ppg_prev else 0
-    
-    apg_current = player_data.get('APG_LAST', player_data.get('apg_last', 0))
-    apg_prev = player_data.get('APG_PREV', player_data.get('apg_prev', apg_current))
-    apg_trend = round(apg_current - apg_prev, 2) if apg_prev else 0
-    
-    rpg_current = player_data.get('RPG_LAST', player_data.get('rpg_last', 0))
-    rpg_prev = player_data.get('RPG_PREV', player_data.get('rpg_prev', rpg_current))
-    rpg_trend = round(rpg_current - rpg_prev, 2) if rpg_prev else 0
-    
-    # Calculate consistency score from standard deviation
-    ppg_std = player_data.get('PPG_STD', player_data.get('ppg_std', 5))
-    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)  # Higher = more consistent
-    
+    pid = player_data.get('PLAYER_ID') or f"{player_data.get('PLAYER_NAME','')}-{player_data.get('TEAM','')}"
     return {
-        'id': player_data.get('PLAYER_ID', player_data.get('player_id', hash(player_data.get('PLAYER_NAME', '')))),
-        'name': player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown')),
-        'team': player_data.get('TEAM', player_data.get('team', 'UNK')),
-        'position': player_data.get('POSITION', player_data.get('position', 'UNK')),
-        'age': player_data.get('AGE', player_data.get('age', 0)),
-        'height': player_data.get('HEIGHT', player_data.get('height', 0)),
-        'weight': player_data.get('WEIGHT', player_data.get('weight', 0)),
-        'stats': {
-            'ppg_last': round(ppg_current, 1),
-            'apg_last': round(apg_current, 1),
-            'rpg_last': round(rpg_current, 1),
-            'spg_last': round(player_data.get('SPG_LAST', player_data.get('spg_last', 0)), 1),
-            'bpg_last': round(player_data.get('BPG_LAST', player_data.get('bpg_last', 0)), 1),
-            'fg_pct_last': round(player_data.get('FG_PCT_LAST', player_data.get('fg_pct_last', 0)) * 100, 1),
-            'fg3_pct_last': round(player_data.get('FG3_PCT_LAST', player_data.get('fg3_pct_last', 0)) * 100, 1),
-            'ft_pct_last': round(player_data.get('FT_PCT_LAST', player_data.get('ft_pct_last', 0)) * 100, 1),
-            'games_played': player_data.get('GAMES_PLAYED_LAST', player_data.get('games_played_last', 0))
-        },
-        'trends': {
-            'ppg_trend': round(player_data.get('PPGTREND', ppg_trend), 2),
-            'apg_trend': round(player_data.get('APGTREND', apg_trend), 2),
-            'rpg_trend': round(player_data.get('RPGTREND', rpg_trend), 2),
-            'consistency_score': round(player_data.get('CONSISTENCYSCORE', consistency_score), 2)
-        }
+        'id': pid,
+        'name': player_data.get('PLAYER_NAME', ''),
+        'team': player_data.get('TEAM', 'UNK'),
+        'position': player_data.get('POSITION', 'UNK'),
+        'age': player_data.get('AGE', None),
+        'ppg': player_data.get('PPG_LAST', 0),
+        'apg': player_data.get('APG_LAST', 0),
+        'rpg': player_data.get('RPG_LAST', 0),
     }
 
 @app.route('/api/health', methods=['GET'])
