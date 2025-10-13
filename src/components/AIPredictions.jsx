@@ -6,8 +6,7 @@ const AIPredictions = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const API_URL = "http://127.0.0.1:5000/api/predictions";
-
+    const API_URL = "http://127.0.0.1:5000/api/ai-predictions";
     const fetchPredictions = async () => {
       try {
         const response = await fetch(API_URL);
@@ -15,7 +14,8 @@ const AIPredictions = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setPredictions(data.data); // <-- get the array inside `data`
+        // data = { predictions: { top_scorers: [...], top_assists: [...], ... } }
+        setPredictions(data?.predictions?.top_scorers ?? []);
       } catch (err) {
         console.error("Failed to fetch predictions:", err);
         setError("Failed to connect to AI server. Make sure the backend is running.");
@@ -29,6 +29,7 @@ const AIPredictions = () => {
 
   if (loading) return <div>Loading AI predictions...</div>;
   if (error) return <div>{error}</div>;
+  if (!Array.isArray(predictions)) return <div>No predictions available.</div>;
 
   return (
     <div className="ai-predictions-container">
@@ -36,9 +37,9 @@ const AIPredictions = () => {
         <p>No predictions available.</p>
       ) : (
         <ul>
-          {predictions.map((prediction, index) => (
+          {predictions.map((player, index) => (
             <li key={index}>
-              <strong>{prediction.team}</strong>: {prediction.prediction}
+              <strong>{player.PLAYER_NAME}</strong>: {player.PREDICTED_PPG?.toFixed ? player.PREDICTED_PPG.toFixed(1) : player.PREDICTED_PPG} PPG
             </li>
           ))}
         </ul>

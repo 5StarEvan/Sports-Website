@@ -40,32 +40,16 @@ def load_nba_data():
         return False
 
 def get_player_stats_summary(player_data):
-    """Convert player data to a more readable format"""
+    pid = player_data.get('PLAYER_ID') or f"{player_data.get('PLAYER_NAME','')}-{player_data.get('TEAM','')}"
     return {
-        'id': player_data['PLAYER_ID'],
-        'name': player_data['PLAYER_NAME'],
-        'team': player_data['TEAM'],
-        'position': player_data['POSITION'],
-        'age': player_data['AGE'],
-        'height': player_data['HEIGHT'],
-        'weight': player_data['WEIGHT'],
-        'stats': {
-            'ppg_last': round(player_data['PPG_LAST'], 1),
-            'apg_last': round(player_data['APG_LAST'], 1),
-            'rpg_last': round(player_data['RPG_LAST'], 1),
-            'spg_last': round(player_data['SPG_LAST'], 1),
-            'bpg_last': round(player_data['BPG_LAST'], 1),
-            'fg_pct_last': round(player_data['FG_PCT_LAST'] * 100, 1),
-            'fg3_pct_last': round(player_data['FG3_PCT_LAST'] * 100, 1),
-            'ft_pct_last': round(player_data['FT_PCT_LAST'] * 100, 1),
-            'games_played': player_data['GAMES_PLAYED_LAST']
-        },
-        'trends': {
-            'ppg_trend': round(player_data['PPG_TREND'], 2),
-            'apg_trend': round(player_data['APG_TREND'], 2),
-            'rpg_trend': round(player_data['RPG_TREND'], 2),
-            'consistency_score': round(player_data['CONSISTENCY_SCORE'], 2)
-        }
+        'id': pid,
+        'name': player_data.get('PLAYER_NAME', ''),
+        'team': player_data.get('TEAM', 'UNK'),
+        'position': player_data.get('POSITION', 'UNK'),
+        'age': player_data.get('AGE', None),
+        'ppg': player_data.get('PPG_LAST', 0),
+        'apg': player_data.get('APG_LAST', 0),
+        'rpg': player_data.get('RPG_LAST', 0),
     }
 
 @app.route('/api/health', methods=['GET'])
