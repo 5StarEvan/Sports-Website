@@ -10,12 +10,13 @@ import json
 import os
 from typing import Dict, List, Optional
 
-# Import our existing modules
+
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
     AI_AVAILABLE = True
-except ImportError:
-    print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
+except ImportError as e:
+    #print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
+    print(e);
     AI_AVAILABLE = False
 
 app = Flask(__name__)
