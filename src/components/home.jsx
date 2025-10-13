@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./home.css";
 import AIPredictions from "./AIPredictions";
 
@@ -12,8 +13,7 @@ const Home = () => {
           <span className="header-title">BASKETBALL AGENDA</span>
         </div>
         <nav className="header-nav">
-          <a href="#ai-predictions">AI PREDICTIONS</a>
-          <a href="#stats">STATS</a>
+          <Link to="/stats">STATS</Link>
           <a href="#recommendations">RECOMMENDATIONS</a>
           <a href="#favourites">FAVOURITES</a>
         </nav>
