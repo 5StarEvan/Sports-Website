@@ -1,5 +1,6 @@
 import React from "react";
 import "./home.css";
+import AIPredictions from "./AIPredictions";
 
 const Home = () => {
   return (
@@ -11,6 +12,7 @@ const Home = () => {
           <span className="header-title">BASKETBALL AGENDA</span>
         </div>
         <nav className="header-nav">
+          <a href="#ai-predictions">AI PREDICTIONS</a>
           <a href="#stats">STATS</a>
           <a href="#recommendations">RECOMMENDATIONS</a>
           <a href="#favourites">FAVOURITES</a>
@@ -31,6 +33,11 @@ const Home = () => {
             <span className="black-word">BASKET</span><span className="highlight">BALL</span> AGENDA
           </h1>
         </div>
+      </section>
+
+      {/* AI Predictions Section */}
+      <section id="ai-predictions" className="ai-section">
+        <AIPredictions />
       </section>
     </div>
   );
