@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./home.css";
 import AIPredictions from "./AIPredictions";
+import DebugPanel from "./DebugPanel";
+import ErrorBoundary from "./ErrorBoundary";
 
 const Home = () => {
   return (
@@ -37,8 +39,14 @@ const Home = () => {
 
       {/* AI Predictions Section */}
       <section id="ai-predictions" className="ai-section">
-        <AIPredictions />
+        {/* Temporarily disabled to avoid blank screen while backend is unreachable */}
+        {/* <ErrorBoundary>
+          <AIPredictions />
+        </ErrorBoundary> */}
+        <div style={{ color: '#fff' }}>AI Predictions temporarily disabled. Check Debug Panel.</div>
       </section>
+
+      <DebugPanel />
     </div>
   );
 };
