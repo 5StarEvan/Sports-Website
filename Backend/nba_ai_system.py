@@ -145,7 +145,7 @@ class NBAAISystem:
         
         return X_scaled, y, df
 
-    def train_model(self, epochs=100, batch_size=32, learning_rate=0.001):
+    def train_model(self, epochs=1000, batch_size=32, learning_rate=0.001):
         """Train the PyTorch model"""
         X, y, df = self.prepare_data()
         if X is None:
