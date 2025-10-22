@@ -213,6 +213,18 @@ def get_ai_predictions():
             'breakout_players': get_breakout_players(10)
         }
         
+        # Add past stats to predictions if not already present
+        if nba_data:
+            for category in ['top_scorers', 'top_assists', 'top_rebounders']:
+                for player in predictions[category]:
+                    player_name = player['PLAYER_NAME']
+                    # Find matching player in main data
+                    matching_player = next((p for p in nba_data if p['PLAYER_NAME'] == player_name), None)
+                    if matching_player:
+                        player['PPG_LAST'] = matching_player.get('PPG_LAST', 0)
+                        player['APG_LAST'] = matching_player.get('APG_LAST', 0)
+                        player['RPG_LAST'] = matching_player.get('RPG_LAST', 0)
+        
         return jsonify({
             'predictions': predictions,
             'ai_available': True
