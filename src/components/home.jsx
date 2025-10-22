@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import "./home.css";
+import AIPredictions from "./AIPredictions";
 
 const BasketballAnimation = () => {
   const canvasRef = useRef(null);
@@ -167,7 +168,7 @@ const Home = () => {
       <section id="ai-predictions" className="ai-section">
         <div className="ai-content">
           <h2>AI Predictions</h2>
-          <p>AI Predictions temporarily disabled. Check Debug Panel.</p>
+          <AIPredictions />
         </div>
       </section>
     </div>

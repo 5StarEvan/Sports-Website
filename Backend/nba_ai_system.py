@@ -82,7 +82,7 @@ class NBAAISystem:
             self.data = self.scraper.load_data()
             if self.data and self.load_model():
                 self.model_trained = True
-                return True
+        return True
         
         # Scrape new data
         print("🔄 Scraping NBA data for 2024-25 season...")
@@ -90,7 +90,7 @@ class NBAAISystem:
         
         if not self.data:
             print("❌ Failed to scrape NBA data")
-            return False
+        return False
         
         # Save data
         self.scraper.save_data(self.data)
@@ -104,7 +104,7 @@ class NBAAISystem:
             return True
         else:
             print("❌ Failed to train model")
-            return False
+        return False
 
     def prepare_data(self):
         """Prepare data for training"""
@@ -246,6 +246,14 @@ class NBAAISystem:
         results['PREDICTED_APG'] = predictions[:, 1]
         results['PREDICTED_RPG'] = predictions[:, 2]
         
+        # Add past stats for comparison
+        if 'PPG_LAST' in df.columns:
+            results['PPG_LAST'] = df['PPG_LAST']
+        if 'APG_LAST' in df.columns:
+            results['APG_LAST'] = df['APG_LAST']
+        if 'RPG_LAST' in df.columns:
+            results['RPG_LAST'] = df['RPG_LAST']
+        
         # Get top performers
         top_performers = {
             'PPG': results.nlargest(top_n, 'PREDICTED_PPG'),
@@ -273,26 +281,51 @@ class NBAAISystem:
         results['PREDICTED_APG'] = predictions[:, 1]
         results['PREDICTED_RPG'] = predictions[:, 2]
         
-        # Calculate improvements
-        results['PPG_IMPROVEMENT'] = (results['PREDICTED_PPG'] - results['PPG_LAST']) / results['PPG_LAST'] * 100
-        results['APG_IMPROVEMENT'] = (results['PREDICTED_APG'] - results['APG_LAST']) / results['APG_LAST'] * 100
-        results['RPG_IMPROVEMENT'] = (results['PREDICTED_RPG'] - results['RPG_LAST']) / results['RPG_LAST'] * 100
+        # Calculate absolute increases in stats
+        results['PPG_INCREASE'] = results['PREDICTED_PPG'] - results['PPG_LAST']
+        results['APG_INCREASE'] = results['PREDICTED_APG'] - results['APG_LAST']
+        results['RPG_INCREASE'] = results['PREDICTED_RPG'] - results['RPG_LAST']
         
-        # Find overperformers
+        # Calculate percentage improvements for filtering (with bounds checking to avoid division by zero)
+        results['PPG_IMPROVEMENT'] = np.where(
+            results['PPG_LAST'] > 0,
+            (results['PREDICTED_PPG'] - results['PPG_LAST']) / results['PPG_LAST'] * 100,
+            0
+        )
+        results['APG_IMPROVEMENT'] = np.where(
+            results['APG_LAST'] > 0,
+            (results['PREDICTED_APG'] - results['APG_LAST']) / results['APG_LAST'] * 100,
+            0
+        )
+        results['RPG_IMPROVEMENT'] = np.where(
+            results['RPG_LAST'] > 0,
+            (results['PREDICTED_RPG'] - results['RPG_LAST']) / results['RPG_LAST'] * 100,
+            0
+        )
+        
+        # Find overperformers (players with significant percentage improvement in any stat)
         overperformers = results[
             (results['PPG_IMPROVEMENT'] > threshold) |
             (results['APG_IMPROVEMENT'] > threshold) |
             (results['RPG_IMPROVEMENT'] > threshold)
         ].copy()
         
-        # Sort by total improvement
-        overperformers['TOTAL_IMPROVEMENT'] = (
-            overperformers['PPG_IMPROVEMENT'] + 
-            overperformers['APG_IMPROVEMENT'] + 
-            overperformers['RPG_IMPROVEMENT']
+        # Sort by total absolute increase in points + assists + rebounds
+        overperformers['TOTAL_STAT_INCREASE'] = (
+            overperformers['PPG_INCREASE'] + 
+            overperformers['APG_INCREASE'] + 
+            overperformers['RPG_INCREASE']
         )
         
-        overperformers = overperformers.sort_values('TOTAL_IMPROVEMENT', ascending=False)
+        # Keep the percentage improvements for display purposes
+        overperformers['TOTAL_IMPROVEMENT'] = np.clip(
+            overperformers['PPG_IMPROVEMENT'] + 
+            overperformers['APG_IMPROVEMENT'] + 
+            overperformers['RPG_IMPROVEMENT'],
+            -1000, 1000  # Cap at reasonable values
+        )
+        
+        overperformers = overperformers.sort_values('TOTAL_STAT_INCREASE', ascending=False)
         
         return overperformers.head(top_n)
 
