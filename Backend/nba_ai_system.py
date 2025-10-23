@@ -131,10 +131,36 @@ class NBAAISystem:
         # Filter to only existing columns
         self.feature_columns = [col for col in self.feature_columns if col in df.columns]
         
-        # Create target variables (next season performance with realistic improvements)
-        df['PPG_NEXT'] = df['PPG_LAST'] + np.random.normal(0, 1, len(df))
-        df['APG_NEXT'] = df['APG_LAST'] + np.random.normal(0, 0.5, len(df))
-        df['RPG_NEXT'] = df['RPG_LAST'] + np.random.normal(0, 0.8, len(df))
+        # Add age-based features for better prediction
+        if 'AGE' in df.columns:
+            # Fill NaN ages with median age
+            df['AGE'] = df['AGE'].fillna(df['AGE'].median())
+            
+            # Age categories: young (18-23), prime (24-29), veteran (30-35), old (36+)
+            df['AGE_CATEGORY'] = pd.cut(df['AGE'], bins=[0, 23, 29, 35, 100], labels=[0, 1, 2, 3])
+            df['AGE_CATEGORY'] = df['AGE_CATEGORY'].fillna(1).astype(int)  # Default to prime age
+            
+            # Age-based improvement factors (younger players more likely to improve)
+            df['AGE_IMPROVEMENT_FACTOR'] = np.where(df['AGE'] <= 23, 1.2,  # Young players likely to improve
+                                          np.where(df['AGE'] <= 29, 1.0,   # Prime players stable
+                                          np.where(df['AGE'] <= 35, 0.8,   # Veterans slight decline
+                                          0.6)))  # Older players decline
+            
+            # Add age to feature columns
+            if 'AGE_CATEGORY' not in self.feature_columns:
+                self.feature_columns.append('AGE_CATEGORY')
+            if 'AGE_IMPROVEMENT_FACTOR' not in self.feature_columns:
+                self.feature_columns.append('AGE_IMPROVEMENT_FACTOR')
+        
+        # Create target variables (next season performance with age-based improvements)
+        if 'AGE_IMPROVEMENT_FACTOR' in df.columns:
+            df['PPG_NEXT'] = df['PPG_LAST'] + np.random.normal(0, 1, len(df)) * df['AGE_IMPROVEMENT_FACTOR']
+            df['APG_NEXT'] = df['APG_LAST'] + np.random.normal(0, 0.5, len(df)) * df['AGE_IMPROVEMENT_FACTOR']
+            df['RPG_NEXT'] = df['RPG_LAST'] + np.random.normal(0, 0.8, len(df)) * df['AGE_IMPROVEMENT_FACTOR']
+        else:
+            df['PPG_NEXT'] = df['PPG_LAST'] + np.random.normal(0, 1, len(df))
+            df['APG_NEXT'] = df['APG_LAST'] + np.random.normal(0, 0.5, len(df))
+            df['RPG_NEXT'] = df['RPG_LAST'] + np.random.normal(0, 0.8, len(df))
         
         # Prepare features and targets
         X = df[self.feature_columns].values
@@ -276,7 +302,7 @@ class NBAAISystem:
             return None
         
         # Create results
-        results = df[['PLAYER_NAME', 'TEAM', 'POSITION', 'PPG_LAST', 'APG_LAST', 'RPG_LAST']].copy()
+        results = df[['PLAYER_NAME', 'TEAM', 'POSITION', 'AGE', 'PPG_LAST', 'APG_LAST', 'RPG_LAST']].copy()
         results['PREDICTED_PPG'] = predictions[:, 0]
         results['PREDICTED_APG'] = predictions[:, 1]
         results['PREDICTED_RPG'] = predictions[:, 2]
