@@ -186,9 +186,9 @@ class NBAWebScraper:
                                 # Map Basketball Reference headers to our format
                                 if header == 'Player':
                                     player_data['PLAYER_NAME'] = value
-                                elif header == 'Tm':
+                                elif header in ['Tm', 'Team']:
                                     player_data['TEAM'] = value
-                                elif header == 'Pos':
+                                elif header in ['Pos', 'Position']:
                                     player_data['POSITION'] = value
                                 elif header == 'Age':
                                     player_data['AGE'] = self.parse_number(value)
