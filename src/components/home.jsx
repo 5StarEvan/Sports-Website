@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import "./home.css";
 import AIPredictions from "./AIPredictions";
 
@@ -121,9 +122,9 @@ const Home = () => {
           <span className="header-title">BASKETBALL AGENDA</span>
         </div>
         <nav className="header-nav">
-          <a href="#stats">STATS</a>
-          <a href="#recommendations">RECOMMENDATIONS</a>
-          <a href="#favourites">FAVOURITES</a>
+          <Link to="/stats">STATS</Link>
+          <Link to="/recommendations">RECOMMENDATIONS</Link>
+          <Link to="/favourites">FAVOURITES</Link>
         </nav>
         <div className="header-profile">
           <button className="profile-btn" onClick={() => alert('Profile button clicked!')}>
@@ -141,27 +142,6 @@ const Home = () => {
             <span className="black-word">BASKET</span>
             <span className="highlight">BALL</span> AGENDA
           </h1>
-        </div>
-      </section>
-
-      <section id="stats" className="ai-section">
-        <div className="ai-content">
-          <h2>Stats</h2>
-          <p>Stats section content goes here.</p>
-        </div>
-      </section>
-
-      <section id="recommendations" className="ai-section">
-        <div className="ai-content">
-          <h2>Recommendations</h2>
-          <p>Recommendations section content goes here.</p>
-        </div>
-      </section>
-
-      <section id="favourites" className="ai-section">
-        <div className="ai-content">
-          <h2>Favourites</h2>
-          <p>Favourites section content goes here.</p>
         </div>
       </section>
 
