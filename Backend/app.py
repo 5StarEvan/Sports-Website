@@ -87,6 +87,29 @@ def get_player_stats_summary(player_data):
         }
     }
 
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint - API information"""
+    return jsonify({
+        'message': 'NBA Sports Website API',
+        'version': '1.0.0',
+        'status': 'running',
+        'endpoints': {
+            'health': '/api/health',
+            'all_players': '/api/players',
+            'player_by_id': '/api/players/<id>',
+            'search_player': '/api/players/search/<name>',
+            'teams': '/api/teams',
+            'positions': '/api/positions',
+            'ai_predictions': '/api/ai-predictions',
+            'player_prediction': '/api/player-prediction/<name>',
+            'stat_leaders': '/api/stats/leaders'
+        },
+        'documentation': 'Visit /api/health to check server status',
+        'players_loaded': len(nba_data) if nba_data else 0,
+        'ai_available': AI_AVAILABLE
+    })
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
