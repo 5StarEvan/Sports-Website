@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./home.css";
 import AIPredictions from "./AIPredictions";
@@ -112,6 +112,30 @@ const BasketballAnimation = () => {
 };
 
 const Home = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const isLoggedIn = false; // Replace with actual authentication check
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <div className="main-wrapper">
       <BasketballAnimation />
@@ -126,10 +150,20 @@ const Home = () => {
           <Link to="/recommendations">RECOMMENDATIONS</Link>
           <Link to="/favourites">FAVOURITES</Link>
         </nav>
-        <div className="header-profile">
-          <button className="profile-btn" onClick={() => alert('Profile button clicked!')}>
+        <div className="header-profile" ref={dropdownRef}>
+          <button className="profile-btn" onClick={toggleDropdown}>
             <img src="/images/profile_image.jpg" alt="Profile" className="profile-img" />
           </button>
+          {!isLoggedIn && isDropdownOpen && (
+            <div className="profile-dropdown">
+              <Link to="/login" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                Login
+              </Link>
+              <Link to="/create-account" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                Create Account
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 
@@ -142,13 +176,116 @@ const Home = () => {
             <span className="black-word">BASKET</span>
             <span className="highlight">BALL</span> AGENDA
           </h1>
+          <p className="hero-subtitle">
+            Your Ultimate Destination for Basketball Insights, Stats, and AI-Powered Predictions
+          </p>
+          <div className="hero-cta">
+            <Link to="/stats" className="cta-button primary">
+              Explore Stats
+            </Link>
+            <Link to="/recommendations" className="cta-button secondary">
+              Get Recommendations
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="featured-section">
+        <div className="featured-container">
+          <h2 className="section-title">Trending Now</h2>
+          <p className="section-description">
+            Stay ahead with the latest games, player performances, and breaking news
+          </p>
+          <div className="featured-grid">
+            <div className="featured-card">
+              <div className="featured-badge">LIVE</div>
+              <div className="featured-content">
+                <h3>Lakers vs Warriors</h3>
+                <p className="featured-score">112 - 108</p>
+                <p className="featured-time">Q4 - 2:34 remaining</p>
+                <Link to="/stats" className="featured-link">View Details →</Link>
+              </div>
+            </div>
+            <div className="featured-card">
+              <div className="featured-badge upcoming">UPCOMING</div>
+              <div className="featured-content">
+                <h3>Celtics vs Heat</h3>
+                <p className="featured-date">Tonight at 8:00 PM EST</p>
+                <p className="featured-prediction">AI Prediction: Celtics 65%</p>
+                <Link to="/recommendations" className="featured-link">Get Prediction →</Link>
+              </div>
+            </div>
+            <div className="featured-card">
+              <div className="featured-badge highlight">HIGHLIGHT</div>
+              <div className="featured-content">
+                <h3>Player of the Week</h3>
+                <p className="featured-player">LeBron James</p>
+                <p className="featured-stats">32.5 PPG | 8.2 RPG | 7.1 APG</p>
+                <Link to="/stats" className="featured-link">View Stats →</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="how-it-works-section">
+        <div className="how-it-works-container">
+          <h2 className="section-title">How It Works</h2>
+          <p className="section-description">
+            Get started in three simple steps and unlock the power of AI-driven basketball insights
+          </p>
+          <div className="steps-container">
+            <div className="step-item">
+              <div className="step-number">01</div>
+              <div className="step-content">
+                <h3>Create Your Account</h3>
+                <p>Sign up in seconds and personalize your experience with your favorite teams and players.</p>
+              </div>
+            </div>
+            <div className="step-connector"></div>
+            <div className="step-item">
+              <div className="step-number">02</div>
+              <div className="step-content">
+                <h3>Explore & Analyze</h3>
+                <p>Dive into comprehensive statistics, AI predictions, and personalized recommendations.</p>
+              </div>
+            </div>
+            <div className="step-connector"></div>
+            <div className="step-item">
+              <div className="step-number">03</div>
+              <div className="step-content">
+                <h3>Stay Ahead</h3>
+                <p>Get real-time updates, save favorites, and make informed decisions with cutting-edge insights.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="ai-predictions" className="ai-section">
         <div className="ai-content">
-          <h2>AI Predictions</h2>
+          <h2 className="section-title">AI Predictions</h2>
+          <p className="section-description">
+            Get ahead of the game with our cutting-edge AI predictions powered by advanced analytics
+          </p>
           <AIPredictions />
+        </div>
+      </section>
+
+      <section className="cta-section">
+        <div className="cta-container">
+          <h2 className="cta-title">Ready to Elevate Your Basketball Experience?</h2>
+          <p className="cta-description">
+            Join thousands of basketball enthusiasts and get access to exclusive insights, predictions, and more.
+          </p>
+          <div className="cta-buttons">
+            <Link to="/login" className="cta-button primary large">
+              Get Started
+            </Link>
+            <Link to="/create-account" className="cta-button secondary large">
+              Create Account
+            </Link>
+          </div>
         </div>
       </section>
     </div>
