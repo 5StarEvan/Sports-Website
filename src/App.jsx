@@ -4,6 +4,7 @@ import Stats from "./components/Stats.jsx";
 import Recommendations from "./components/Recommendations.jsx";
 import Favourites from "./components/Favourites.jsx";
 import Login from "./components/Login.jsx";
+import SignUp from "./components/SignUp.jsx";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/recommendations" element={<Recommendations/>} />
         <Route path="/favourites" element={<Favourites/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/create-account" element={<SignUp/>} />
       </Routes>
     </Router>
   );

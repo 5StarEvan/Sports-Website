@@ -5,66 +5,60 @@ import './Recommendations.css';
 const Recommendations = () => {
   const [selectedCategory, setSelectedCategory] = useState('players');
 
-  const recommendedPlayers = [
+  const insights = [
     {
       id: 1,
-      name: 'LeBron James',
-      team: 'Lakers',
-      position: 'SF',
-      reason: 'High consistency score and trending upward',
-      stats: { ppg: 28.5, apg: 7.2, rpg: 8.1 },
-      trend: '+2.3 PPG',
-      matchScore: 95
+      title: 'Rising Stars Alert',
+      category: 'Trending',
+      description: 'Young players showing exceptional growth this season with significant stat improvements',
+      icon: '📈',
+      details: 'Players under 25 averaging 20+ PPG increased by 15% this season',
+      link: '/stats'
     },
     {
       id: 2,
-      name: 'Stephen Curry',
-      team: 'Warriors',
-      position: 'PG',
-      reason: 'Excellent 3-point shooting and recent hot streak',
-      stats: { ppg: 30.2, apg: 6.8, rpg: 5.4 },
-      trend: '+3.1 PPG',
-      matchScore: 92
+      title: 'Defensive Powerhouses',
+      category: 'Analysis',
+      description: 'Teams with the best defensive ratings and their impact on game outcomes',
+      icon: '🛡️',
+      details: 'Top 5 defensive teams have 78% win rate in close games',
+      link: '/stats'
     },
     {
       id: 3,
-      name: 'Giannis Antetokounmpo',
-      team: 'Bucks',
-      position: 'PF',
-      reason: 'Strong all-around performance and defensive impact',
-      stats: { ppg: 31.8, apg: 5.7, rpg: 11.2 },
-      trend: '+1.8 PPG',
-      matchScore: 90
+      title: 'Three-Point Revolution',
+      category: 'Trending',
+      description: 'Teams increasing 3-point attempts and their correlation with wins',
+      icon: '🎯',
+      details: 'Teams shooting 35%+ from 3-point range win 65% more games',
+      link: '/stats'
     },
     {
       id: 4,
-      name: 'Luka Dončić',
-      team: 'Mavericks',
-      position: 'PG',
-      reason: 'Triple-double threat with high usage rate',
-      stats: { ppg: 33.1, apg: 9.2, rpg: 8.7 },
-      trend: '+4.2 PPG',
-      matchScore: 88
+      title: 'Clutch Performance',
+      category: 'Analysis',
+      description: 'Players with the best performance in the final 5 minutes of close games',
+      icon: '⏰',
+      details: 'Top clutch players average 8.5 PPG in final 5 minutes',
+      link: '/stats'
     },
     {
       id: 5,
-      name: 'Jayson Tatum',
-      team: 'Celtics',
-      position: 'SF',
-      reason: 'Consistent scoring and improving efficiency',
-      stats: { ppg: 27.8, apg: 4.9, rpg: 8.3 },
-      trend: '+2.7 PPG',
-      matchScore: 87
+      title: 'Injury Impact Analysis',
+      category: 'Insight',
+      description: 'How key player injuries affect team performance and betting lines',
+      icon: '🏥',
+      details: 'Teams missing star players see 12% drop in offensive efficiency',
+      link: '/stats'
     },
     {
       id: 6,
-      name: 'Nikola Jokić',
-      team: 'Nuggets',
-      position: 'C',
-      reason: 'Elite playmaking center with high assist numbers',
-      stats: { ppg: 26.4, apg: 9.8, rpg: 12.1 },
-      trend: '+1.5 PPG',
-      matchScore: 85
+      title: 'Home Court Advantage',
+      category: 'Analysis',
+      description: 'Statistical breakdown of home vs away performance across the league',
+      icon: '🏠',
+      details: 'Home teams win 58% of games with 4.2 PPG advantage on average',
+      link: '/stats'
     }
   ];
 
@@ -117,7 +111,7 @@ const Recommendations = () => {
             className={`tab-button ${selectedCategory === 'players' ? 'active' : ''}`}
             onClick={() => setSelectedCategory('players')}
           >
-            Recommended Players
+            Insights & Analysis
           </button>
           <button
             className={`tab-button ${selectedCategory === 'games' ? 'active' : ''}`}
@@ -129,47 +123,27 @@ const Recommendations = () => {
 
         {selectedCategory === 'players' && (
           <div className="recommendations-section">
-            <h2 className="section-heading">Top Player Recommendations</h2>
+            <h2 className="section-heading">Basketball Insights & Trends</h2>
             <p className="section-description">
-              Based on your viewing history and preferences, here are players you might find interesting
+              Discover key insights, trends, and analysis powered by AI to help you understand the game better
             </p>
             <div className="recommendations-grid">
-              {recommendedPlayers.map((player) => (
-                <div key={player.id} className="recommendation-card">
+              {insights.map((insight) => (
+                <div key={insight.id} className="recommendation-card insight-card">
                   <div className="card-header">
-                    <div className="match-score">
-                      <span className="score-number">{player.matchScore}%</span>
-                      <span className="score-label">Match</span>
-                    </div>
-                    <div className="trend-badge positive">
-                      {player.trend}
-                    </div>
+                    <div className="insight-icon">{insight.icon}</div>
+                    <div className="category-badge">{insight.category}</div>
                   </div>
                   <div className="card-body">
-                    <h3 className="player-name">{player.name}</h3>
-                    <div className="player-meta">
-                      <span className="team-badge">{player.team}</span>
-                      <span className="position-badge">{player.position}</span>
-                    </div>
-                    <p className="recommendation-reason">{player.reason}</p>
-                    <div className="player-stats-mini">
-                      <div className="stat-mini">
-                        <span className="stat-label-mini">PPG</span>
-                        <span className="stat-value-mini">{player.stats.ppg}</span>
-                      </div>
-                      <div className="stat-mini">
-                        <span className="stat-label-mini">APG</span>
-                        <span className="stat-value-mini">{player.stats.apg}</span>
-                      </div>
-                      <div className="stat-mini">
-                        <span className="stat-label-mini">RPG</span>
-                        <span className="stat-value-mini">{player.stats.rpg}</span>
-                      </div>
+                    <h3 className="insight-title">{insight.title}</h3>
+                    <p className="recommendation-reason">{insight.description}</p>
+                    <div className="insight-details">
+                      <span className="details-text">{insight.details}</span>
                     </div>
                   </div>
                   <div className="card-footer">
-                    <Link to="/stats" className="view-stats-link">
-                      View Full Stats →
+                    <Link to={insight.link} className="view-stats-link">
+                      Explore More →
                     </Link>
                   </div>
                 </div>
