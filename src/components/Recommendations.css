@@ -175,6 +175,12 @@
   margin-bottom: 1.5rem;
 }
 
+.insight-card .card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
 .match-score {
   display: flex;
   flex-direction: column;
@@ -305,6 +311,55 @@
 .view-stats-link:hover {
   color: #111;
   transform: translateX(5px);
+}
+
+.insight-card {
+  position: relative;
+}
+
+.insight-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: #111;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 20px;
+}
+
+.insight-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #111;
+  margin: 0 0 1rem 0;
+}
+
+.insight-details {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #e53935;
+}
+
+.details-text {
+  font-size: 0.95rem;
+  color: #111;
+  font-weight: 600;
+  line-height: 1.6;
+  display: block;
 }
 
 .games-grid {
