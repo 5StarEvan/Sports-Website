@@ -1,16 +1,21 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./SignUp.css";
+import { signup } from "../utils/auth";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -29,8 +34,12 @@ const SignUp = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
     }
 
     if (!formData.email.trim()) {
@@ -52,15 +61,33 @@ const SignUp = () => {
     }
 
     setErrors(newErrors);
+    setSubmitError("");
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Handle signup logic here
-      console.log("Signup attempt:", formData);
-      // You can add API call here
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setSubmitError("");
+
+    const result = await signup(
+      formData.firstName,
+      formData.lastName,
+      formData.email,
+      formData.password
+    );
+
+    setLoading(false);
+
+    if (result.success) {
+      navigate("/");
+      window.location.reload();
+    } else {
+      setSubmitError(result.message || "Failed to create account. Please try again.");
     }
   };
 
@@ -73,18 +100,34 @@ const SignUp = () => {
         </div>
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">FULL NAME</label>
+            <label htmlFor="firstName">FIRST NAME</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
               onChange={handleChange}
               required
-              placeholder="Enter your full name"
-              className={errors.name ? "error" : ""}
+              placeholder="Enter your first name"
+              className={errors.firstName ? "error" : ""}
+              disabled={loading}
             />
-            {errors.name && <span className="error-message">{errors.name}</span>}
+            {errors.firstName && <span className="error-message">{errors.firstName}</span>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="lastName">LAST NAME</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              placeholder="Enter your last name"
+              className={errors.lastName ? "error" : ""}
+              disabled={loading}
+            />
+            {errors.lastName && <span className="error-message">{errors.lastName}</span>}
           </div>
           <div className="form-group">
             <label htmlFor="email">EMAIL</label>
@@ -97,6 +140,7 @@ const SignUp = () => {
               required
               placeholder="Enter your email"
               className={errors.email ? "error" : ""}
+              disabled={loading}
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
@@ -111,6 +155,7 @@ const SignUp = () => {
               required
               placeholder="Enter your password"
               className={errors.password ? "error" : ""}
+              disabled={loading}
             />
             {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
@@ -125,11 +170,17 @@ const SignUp = () => {
               required
               placeholder="Confirm your password"
               className={errors.confirmPassword ? "error" : ""}
+              disabled={loading}
             />
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
           </div>
-          <button type="submit" className="signup-submit-btn">
-            CREATE ACCOUNT
+          {submitError && (
+            <div className="submit-error">
+              {submitError}
+            </div>
+          )}
+          <button type="submit" className="signup-submit-btn" disabled={loading}>
+            {loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
           </button>
         </form>
         <div className="signup-footer">

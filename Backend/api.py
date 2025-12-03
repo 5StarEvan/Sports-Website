@@ -8,7 +8,9 @@ from flask_cors import CORS
 import pickle
 import json
 import os
+import secrets
 from typing import Dict, List, Optional
+
 
 # Import our existing modules
 try:
@@ -20,6 +22,7 @@ except ImportError:
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
 
 # Global variable to store NBA data
 nba_data = None
@@ -249,6 +252,8 @@ def get_stat_leaders():
         'apg_leaders': format_leaders(apg_leaders, 'APG_LAST', 'Assists Per Game'),
         'rpg_leaders': format_leaders(rpg_leaders, 'RPG_LAST', 'Rebounds Per Game')
     })
+
+
 
 if __name__ == '__main__':
     try:

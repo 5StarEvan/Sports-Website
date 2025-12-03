@@ -186,6 +186,70 @@
   text-decoration: none;
 }
 
+.profile-initials {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #e53935;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1rem;
+  border: 2px solid #111;
+  transition: all 0.3s ease;
+}
+
+.profile-btn:hover .profile-initials {
+  border-color: #e53935;
+  transform: scale(1.1);
+}
+
+.dropdown-user-info {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-user-name {
+  font-weight: 700;
+  color: #111;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.dropdown-user-email {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #eee;
+  margin: 0.5rem 0;
+}
+
+.logout-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  color: #e53935;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.logout-btn:hover {
+  background: #e53935;
+  color: #fff;
+}
+
 .hero-split-bg {
   display: flex;
   flex-direction: column;
