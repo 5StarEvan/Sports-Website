@@ -8,8 +8,135 @@ from flask_cors import CORS
 import pickle
 import json
 import os
+import secrets
 from typing import Dict, List, Optional
+from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id
 
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
+#--------------------------------------------------------------------------------------------------------------------------
+try:
+    mysql = init_db(app)
+    print("✅ Database connection initialized")
+except Exception as e:
+    print(f"Database initialization error: {e}")
+    print("Authentication features may not work without database connection")
+    mysql = None
+#--------------------------------------------------------------------------------------------------------------------------\
+
+#--------------------------------------------------------------------------------------------------------------------------
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    if not mysql:
+        return jsonify({
+            'success': False,
+            'message': 'Database connection not available'
+        }), 500
+    
+    try:
+        success, user, message = create_user_from_json(mysql)
+        
+        if success:
+            token = secrets.token_urlsafe(32)
+            return jsonify({
+                'success': True,
+                'user': user,
+                'token': token,
+                'message': message
+            }), 201
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            }), 400
+    except Exception as e:
+        print(f"Signup error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while creating your account'
+        }), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    if not mysql:
+        return jsonify({
+            'success': False,
+            'message': 'Database connection not available'
+        }), 500
+    
+    try:
+        success, user, message = authenticate_user_from_json(mysql)
+        
+        if success:
+            token = secrets.token_urlsafe(32)
+            return jsonify({
+                'success': True,
+                'user': user,
+                'token': token,
+                'message': message
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            }), 401
+    except Exception as e:
+        print(f"Login error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': 'An error occurred while logging in'
+        }), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    return jsonify({
+        'success': True,
+        'message': 'Logged out successfully'
+    }), 200
+
+@app.route('/api/auth/verify', methods=['GET'])
+def verify():
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({
+                'authenticated': False,
+                'message': 'No token provided'
+            }), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        if not token:
+            return jsonify({
+                'authenticated': False,
+                'message': 'Invalid token'
+            }), 401
+        
+        user_id = request.args.get('user_id')
+        if user_id:
+            user = get_user_by_id(mysql, int(user_id))
+            if user:
+                return jsonify({
+                    'authenticated': True,
+                    'user': user
+                }), 200
+        
+        return jsonify({
+            'authenticated': True,
+            'message': 'Token is valid'
+        }), 200
+    except Exception as e:
+        print(f"Verify error: {e}")
+        return jsonify({
+            'authenticated': False,
+            'message': 'Error verifying token'
+        }), 500
+#--------------------------------------------------------------------------------------------------------------------------
 
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai

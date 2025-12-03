@@ -1,24 +1,41 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
+import { login } from "../utils/auth";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", formData);
+    setError("");
+    setLoading(true);
+
+    const result = await login(formData.email, formData.password);
+
+    setLoading(false);
+
+    if (result.success) {
+      navigate("/");
+      window.location.reload();
+    } else {
+      setError(result.message || "Login failed. Please try again.");
+    }
   };
 
   return (
@@ -39,6 +56,7 @@ const Login = () => {
               onChange={handleChange}
               required
               placeholder="Enter your email"
+              disabled={loading}
             />
           </div>
           <div className="form-group">
@@ -51,10 +69,16 @@ const Login = () => {
               onChange={handleChange}
               required
               placeholder="Enter your password"
+              disabled={loading}
             />
           </div>
-          <button type="submit" className="login-submit-btn">
-            LOGIN
+          {error && (
+            <div className="login-error">
+              {error}
+            </div>
+          )}
+          <button type="submit" className="login-submit-btn" disabled={loading}>
+            {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
         </form>
         <div className="login-footer">

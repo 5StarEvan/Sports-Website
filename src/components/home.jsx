@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./home.css";
 import AIPredictions from "./AIPredictions";
+import { isAuthenticated, getUser, logout } from "../utils/auth";
 
 const BasketballAnimation = () => {
   const canvasRef = useRef(null);
@@ -112,9 +113,23 @@ const BasketballAnimation = () => {
 };
 
 const Home = () => {
+  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const isLoggedIn = false; // Replace with actual authentication check
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      if (authenticated) {
+        setUser(getUser());
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -136,6 +151,14 @@ const Home = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    setIsLoggedIn(false);
+    setUser(null);
+    setIsDropdownOpen(false);
+    navigate("/");
+  };
+
   return (
     <div className="main-wrapper">
       <BasketballAnimation />
@@ -152,16 +175,46 @@ const Home = () => {
         </nav>
         <div className="header-profile" ref={dropdownRef}>
           <button className="profile-btn" onClick={toggleDropdown}>
-            <img src="/images/profile_image.jpg" alt="Profile" className="profile-img" />
+            {isLoggedIn && user ? (
+              <div className="profile-initials">
+                {user.first_name?.[0]?.toUpperCase() || ''}{user.last_name?.[0]?.toUpperCase() || ''}
+              </div>
+            ) : (
+              <img src="/images/profile_image.jpg" alt="Profile" className="profile-img" />
+            )}
           </button>
-          {!isLoggedIn && isDropdownOpen && (
+          {isDropdownOpen && (
             <div className="profile-dropdown">
-              <Link to="/login" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
-                Login
-              </Link>
-              <Link to="/create-account" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
-                Create Account
-              </Link>
+              {isLoggedIn && user ? (
+                <>
+                  <div className="dropdown-user-info">
+                    <div className="dropdown-user-name">
+                      {user.first_name} {user.last_name}
+                    </div>
+                    <div className="dropdown-user-email">{user.email}</div>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <Link to="/favourites" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                    My Favourites
+                  </Link>
+                  <Link to="/recommendations" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                    Recommendations
+                  </Link>
+                  <div className="dropdown-divider"></div>
+                  <button className="dropdown-item logout-btn" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                    Login
+                  </Link>
+                  <Link to="/create-account" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                    Create Account
+                  </Link>
+                </>
+              )}
             </div>
           )}
         </div>
