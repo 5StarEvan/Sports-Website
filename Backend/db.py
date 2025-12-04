@@ -8,6 +8,7 @@ from typing import Dict, Optional, Tuple
 
 load_dotenv()
 
+
 class DatabaseConfig:
     
     def __init__(self):
