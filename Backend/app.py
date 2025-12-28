@@ -1,17 +1,19 @@
-"""
-Flask API Server for NBA Sports Website
-Serves NBA player data and AI predictions to the React frontend
-"""
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import pickle
 import json
 import os
 import secrets
+import subprocess
+import sys
+import signal
+import time
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from functools import wraps
 from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id
-
 
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
@@ -20,46 +22,116 @@ except ImportError as e:
     print(f"AI predictions module not available: {e}")
     AI_AVAILABLE = False
 
-
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})  
 
+AO = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+CORS(app, resources={
+    r"/api/*": {
+        "origins": AO,
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+app.config['SECRET_KEY'] = SECRET_KEY
+
+TOKEN_EXPIRY_HOURS = 24
+active_tokens = {}
 
 mysql = None
 try:
     mysql = init_db(app)
     print("✅ Database connection configured successfully")
-    print(f"   MySQL Host: {app.config.get('MYSQL_HOST', 'not set')}")
-    print(f"   MySQL Database: {app.config.get('MYSQL_DB', 'not set')}")
-    print(f"   MySQL User: {app.config.get('MYSQL_USER', 'not set')}")
 except Exception as e:
     print(f"Database initialization error: {e}")
-    print("Authentication features may not work without database connection")
-    print("Server will continue to run, but auth endpoints will return errors")
     mysql = None
-
 
 nba_data = None
 
+def create_token(user_id: int) -> str:
+    token = secrets.token_urlsafe(32)
+    expiry = datetime.now() + timedelta(hours=TOKEN_EXPIRY_HOURS)
+    active_tokens[token] = {
+        'user_id': user_id,
+        'expiry': expiry
+    }
+    return token
+
+def validate_token(token: str) -> Optional[int]:
+    if token not in active_tokens:
+        return None
+    
+    token_data = active_tokens[token]
+    if datetime.now() > token_data['expiry']:
+        del active_tokens[token]
+        return None
+    
+    return token_data['user_id']
+
+def invalidate_token(token: str):
+    if token in active_tokens:
+        del active_tokens[token]
+
+def require_auth(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'message': 'No token provided'}), 401
+        
+        token = auth_header.split(' ')[1]
+        user_id = validate_token(token)
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'Invalid or expired token'}), 401
+        
+        request.user_id = user_id
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+def sanitize_string(value: str, max_length: int = 100) -> str:
+    if not isinstance(value, str):
+        return ""
+    return value[:max_length].strip()
+
+def validate_pagination(page: any, limit: any) -> tuple:
+    try:
+        page = max(int(page), 1)
+    except (ValueError, TypeError):
+        page = 1
+    
+    try:
+        limit = min(max(int(limit), 1), 100)
+    except (ValueError, TypeError):
+        limit = 20
+    
+    return page, limit
+
 def load_nba_data():
-    """Load NBA player data from pickle file"""
     global nba_data
     try:
         with open('nba_2024_25_data.pkl', 'rb') as f:
             nba_data = pickle.load(f)
-        print(f" Loaded {len(nba_data)} NBA players from pickle file")
+        print(f"✅ Loaded {len(nba_data)} NBA players from pickle file")
         return True
     except FileNotFoundError:
-        print(" NBA data file 'nba_2024_25_data.pkl' not found.")
+        print("⚠️ NBA data file 'nba_2024_25_data.pkl' not found.")
         return False
     except Exception as e:
-        print(f" Error loading NBA data: {e}")
+        print(f"⚠️ Error loading NBA data: {e}")
         return False
 
 def get_player_stats_summary(player_data):
-    """Convert player data to a more readable format"""
-    
-    # Calculate actual trends from current vs previous season
     ppg_current = player_data.get('PPG_LAST', player_data.get('ppg_last', 0))
     ppg_prev = player_data.get('PPG_PREV', player_data.get('ppg_prev', ppg_current))
     ppg_trend = round(ppg_current - ppg_prev, 2) if ppg_prev else 0
@@ -72,9 +144,8 @@ def get_player_stats_summary(player_data):
     rpg_prev = player_data.get('RPG_PREV', player_data.get('rpg_prev', rpg_current))
     rpg_trend = round(rpg_current - rpg_prev, 2) if rpg_prev else 0
     
-    # Calculate consistency score from standard deviation
     ppg_std = player_data.get('PPG_STD', player_data.get('ppg_std', 5))
-    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)  # Higher = more consistent
+    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)
     
     return {
         'id': player_data.get('PLAYER_ID', player_data.get('player_id', hash(player_data.get('PLAYER_NAME', '')))),
@@ -103,10 +174,16 @@ def get_player_stats_summary(player_data):
         }
     }
 
-#--------------------------------------------------------------------------------------------------------------------------
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
-#--------------------------------------------------------------------------------------------------------------------------
 @app.route('/api/auth/signup', methods=['POST'])
+@limiter.limit("5 per hour")
 def signup():
     if not mysql:
         return jsonify({
@@ -118,7 +195,7 @@ def signup():
         success, user, message = create_user_from_json(mysql)
         
         if success:
-            token = secrets.token_urlsafe(32)
+            token = create_token(user['id'])
             return jsonify({
                 'success': True,
                 'user': user,
@@ -132,14 +209,13 @@ def signup():
             }), 400
     except Exception as e:
         print(f"Signup error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({
             'success': False,
             'message': 'An error occurred while creating your account'
         }), 500
 
 @app.route('/api/auth/login', methods=['POST'])
+@limiter.limit("10 per hour")
 def login():
     if not mysql:
         return jsonify({
@@ -151,7 +227,7 @@ def login():
         success, user, message = authenticate_user_from_json(mysql)
         
         if success:
-            token = secrets.token_urlsafe(32)
+            token = create_token(user['id'])
             return jsonify({
                 'success': True,
                 'user': user,
@@ -165,15 +241,20 @@ def login():
             }), 401
     except Exception as e:
         print(f"Login error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({
             'success': False,
             'message': 'An error occurred while logging in'
         }), 500
 
 @app.route('/api/auth/logout', methods=['POST'])
+@require_auth
 def logout():
+
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        invalidate_token(token)
+    
     return jsonify({
         'success': True,
         'message': 'Logged out successfully'
@@ -196,26 +277,25 @@ def verify():
             }), 401
         
         token = auth_header.split(' ')[1]
+        user_id = validate_token(token)
         
-        if not token:
+        if not user_id:
             return jsonify({
                 'authenticated': False,
-                'message': 'Invalid token'
+                'message': 'Invalid or expired token'
             }), 401
         
-        user_id = request.args.get('user_id')
-        if user_id:
-            user = get_user_by_id(mysql, int(user_id))
-            if user:
-                return jsonify({
-                    'authenticated': True,
-                    'user': user
-                }), 200
+        user = get_user_by_id(mysql, user_id)
+        if user:
+            return jsonify({
+                'authenticated': True,
+                'user': user
+            }), 200
         
         return jsonify({
-            'authenticated': True,
-            'message': 'Token is valid'
-        }), 200
+            'authenticated': False,
+            'message': 'User not found'
+        }), 401
     except Exception as e:
         print(f"Verify error: {e}")
         return jsonify({
@@ -223,13 +303,8 @@ def verify():
             'message': 'Error verifying token'
         }), 500
 
-#--------------------------------------------------------------------------------------------------------------------------
-# NBA DATA ROUTES
-#--------------------------------------------------------------------------------------------------------------------------
-
 @app.route('/', methods=['GET'])
 def root():
-    """Root endpoint - API information"""
     return jsonify({
         'message': 'NBA Sports Website API',
         'version': '1.0.0',
@@ -245,14 +320,12 @@ def root():
             'player_prediction': '/api/player-prediction/<name>',
             'stat_leaders': '/api/stats/leaders'
         },
-        'documentation': 'Visit /api/health to check server status',
         'players_loaded': len(nba_data) if nba_data else 0,
         'ai_available': AI_AVAILABLE
     })
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
         'message': 'NBA API server is running',
@@ -262,19 +335,19 @@ def health_check():
     })
 
 @app.route('/api/players', methods=['GET'])
+@limiter.limit("100 per hour")
 def get_all_players():
-    """Get all NBA players with their stats"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
     
-    # Get query parameters for pagination and filtering
-    page = int(request.args.get('page', 1))
-    limit = int(request.args.get('limit', 20))
-    search = request.args.get('search', '').lower()
-    team = request.args.get('team', '').upper()
-    position = request.args.get('position', '').upper()
+    page = request.args.get('page', 1)
+    limit = request.args.get('limit', 20)
+    page, limit = validate_pagination(page, limit)
     
-    # Filter players
+    search = sanitize_string(request.args.get('search', ''), 50).lower()
+    team = sanitize_string(request.args.get('team', ''), 10).upper()
+    position = sanitize_string(request.args.get('position', ''), 10).upper()
+    
     filtered_players = nba_data
     
     if search:
@@ -286,12 +359,10 @@ def get_all_players():
     if position:
         filtered_players = [p for p in filtered_players if p['POSITION'] == position]
     
-    # Pagination
     start_idx = (page - 1) * limit
     end_idx = start_idx + limit
     page_players = filtered_players[start_idx:end_idx]
     
-    # Convert to summary format
     players_summary = [get_player_stats_summary(player) for player in page_players]
     
     return jsonify({
@@ -310,10 +381,13 @@ def get_all_players():
     })
 
 @app.route('/api/players/<int:player_id>', methods=['GET'])
+@limiter.limit("200 per hour")
 def get_player_by_id(player_id):
-    """Get specific player by ID"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
+    
+    if player_id < 0 or player_id > 9999999:
+        return jsonify({'error': 'Invalid player ID'}), 400
     
     player = next((p for p in nba_data if p['PLAYER_ID'] == player_id), None)
     if not player:
@@ -322,23 +396,26 @@ def get_player_by_id(player_id):
     return jsonify(get_player_stats_summary(player))
 
 @app.route('/api/players/search/<string:player_name>', methods=['GET'])
+@limiter.limit("100 per hour")
 def search_player(player_name):
-    """Search for a player by name"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
     
-    player_name_lower = player_name.lower()
-    players = [p for p in nba_data if player_name_lower in p['PLAYER_NAME'].lower()]
+    player_name_clean = sanitize_string(player_name, 50).lower()
+    if not player_name_clean:
+        return jsonify({'error': 'Invalid player name'}), 400
+    
+    players = [p for p in nba_data if player_name_clean in p['PLAYER_NAME'].lower()]
     
     if not players:
         return jsonify({'error': 'No players found'}), 404
     
-    players_summary = [get_player_stats_summary(player) for player in players]
+    players_summary = [get_player_stats_summary(player) for player in players[:50]]
     return jsonify({'players': players_summary})
 
 @app.route('/api/teams', methods=['GET'])
+@limiter.limit("100 per hour")
 def get_teams():
-    """Get all unique teams"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
     
@@ -347,8 +424,8 @@ def get_teams():
     return jsonify({'teams': teams})
 
 @app.route('/api/positions', methods=['GET'])
+@limiter.limit("100 per hour")
 def get_positions():
-    """Get all unique positions"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
     
@@ -357,19 +434,17 @@ def get_positions():
     return jsonify({'positions': positions})
 
 @app.route('/api/ai-predictions', methods=['GET'])
+@limiter.limit("20 per hour")
 def get_ai_predictions():
-    """Get AI predictions for top performers"""
     if not AI_AVAILABLE:
         return jsonify({
-            'error': 'AI predictions not available. Please install PyTorch dependencies.',
+            'error': 'AI predictions not available',
             'ai_available': False
-        })
+        }), 503
     
     try:
-        # Initialize AI system if not already done
         initialize_nba_ai()
         
-        # Get predictions
         predictions = {
             'top_scorers': get_top_scorers(10),
             'top_assists': get_top_assists(10),
@@ -377,12 +452,10 @@ def get_ai_predictions():
             'breakout_players': get_breakout_players(10)
         }
         
-        # Add past stats to predictions if not already present
         if nba_data:
             for category in ['top_scorers', 'top_assists', 'top_rebounders']:
                 for player in predictions[category]:
                     player_name = player['PLAYER_NAME']
-                    # Find matching player in main data
                     matching_player = next((p for p in nba_data if p['PLAYER_NAME'] == player_name), None)
                     if matching_player:
                         player['PPG_LAST'] = matching_player.get('PPG_LAST', 0)
@@ -394,39 +467,44 @@ def get_ai_predictions():
             'ai_available': True
         })
     except Exception as e:
+        print(f"AI prediction error: {e}")
         return jsonify({
-            'error': f'Error getting AI predictions: {str(e)}',
+            'error': 'Error generating predictions',
             'ai_available': True
         }), 500
 
 @app.route('/api/player-prediction/<string:player_name>', methods=['GET'])
+@limiter.limit("30 per hour")
 def get_player_prediction_api(player_name):
-    """Get AI prediction for a specific player"""
     if not AI_AVAILABLE:
         return jsonify({
-            'error': 'AI predictions not available. Please install PyTorch dependencies.',
+            'error': 'AI predictions not available',
             'ai_available': False
-        })
+        }), 503
+    
+    player_name_clean = sanitize_string(player_name, 50)
+    if not player_name_clean:
+        return jsonify({'error': 'Invalid player name'}), 400
     
     try:
-        prediction = get_player_prediction(player_name)
+        prediction = get_player_prediction(player_name_clean)
         return jsonify({
             'prediction': prediction,
             'ai_available': True
         })
     except Exception as e:
+        print(f"Player prediction error: {e}")
         return jsonify({
-            'error': f'Error getting prediction for {player_name}: {str(e)}',
+            'error': 'Error generating prediction',
             'ai_available': True
         }), 500
 
 @app.route('/api/stats/leaders', methods=['GET'])
+@limiter.limit("100 per hour")
 def get_stat_leaders():
-    """Get current stat leaders from the data"""
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
     
-    # Sort players by different stats
     ppg_leaders = sorted(nba_data, key=lambda x: x['PPG_LAST'], reverse=True)[:10]
     apg_leaders = sorted(nba_data, key=lambda x: x['APG_LAST'], reverse=True)[:10]
     rpg_leaders = sorted(nba_data, key=lambda x: x['RPG_LAST'], reverse=True)[:10]
@@ -446,19 +524,54 @@ def get_stat_leaders():
     })
 
 if __name__ == '__main__':
+    frontend_process = None
+    
+    def cleanup_processes():
+        if frontend_process:
+            try:
+                print("\nStopping frontend server...")
+                frontend_process.terminate()
+                frontend_process.wait(timeout=5)
+                print(" Frontend server stopped")
+            except Exception as e:
+                print(f"Error stopping frontend: {e}")
+                try:
+                    frontend_process.kill()
+                except:
+                    pass
+    
+    def signal_handler(sig, frame):
+        cleanup_processes()
+        sys.exit(0)
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
     try:
-        # Load NBA data on startup
-        print("🔄 Loading NBA data...")
+        print("🌐 Starting frontend development server...")
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(backend_dir)
+        
+        package_json = os.path.join(project_root, 'package.json')
+        if os.path.exists(package_json):
+            try:
+                frontend_process = subprocess.Popen(
+                    ['npm', 'run', 'dev'],
+                    cwd=project_root,
+                    shell=(sys.platform == 'win32')
+                )
+                print("Frontend server starting...")
+                print(f"   Frontend: http://localhost:5173")
+                time.sleep(3)
+            except Exception as e:
+                print(f"Frontend startup failed: {e}")
+        
+        print("\n🔄 Loading NBA data...")
         if load_nba_data():
-            print(f"✅ NBA data loaded successfully - {len(nba_data)} players available")
-            # Show first few players as confirmation
-            print("📋 Sample players loaded:")
+            print(f"NBA data loaded - {len(nba_data)} players")
             for i, player in enumerate(nba_data[:5]):
                 print(f"  {i+1}. {player['PLAYER_NAME']} ({player['TEAM']}) - {player['PPG_LAST']:.1f} PPG")
         else:
-            print("❌ Failed to load NBA data from pickle file")
-            print("📝 Creating minimal sample data for testing...")
-            # Create minimal sample data if file doesn't exist
             nba_data = [
                 {
                     'PLAYER_ID': 1,
@@ -505,33 +618,31 @@ if __name__ == '__main__':
                     'CONSISTENCY_SCORE': 0.92
                 }
             ]
-            globals()['nba_data'] = nba_data
-            print(f"⚠️ Using sample data - only {len(nba_data)} players available")
+            print(f"Using sample data - {len(nba_data)} players")
         
-        # Initialize AI system if available
         if AI_AVAILABLE:
             try:
-                print("🔄 Initializing AI system...")
+                print("Initializing AI system...")
                 initialize_nba_ai()
-                print("✅ AI system initialized successfully")
+                print("AI system initialized")
             except Exception as e:
-                print(f"⚠️ AI system initialization failed: {e}")
+                print(f"AI initialization failed: {e}")
         
         print("\n" + "="*50)
-        print("🚀 Starting NBA API server...")
-        print("🌐 Server URL: http://localhost:5000")
-        print("🔗 Health Check: http://localhost:5000/api/health")
-        print("👥 Players API: http://localhost:5000/api/players")
+        print("Starting NBA API server...")
+        print("Backend: http://localhost:5000")
+        print("Frontend: http://localhost:5173")
+        print("Health: http://localhost:5000/api/health")
         print("="*50)
-        print("🛑 Press Ctrl+C to stop the server")
+        print("Press Ctrl+C to stop")
         print("="*50 + "\n")
         
-        # Run server - use 0.0.0.0 to allow connections from any interface (including proxy)
         app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
         
     except KeyboardInterrupt:
-        print("\n🛑 Server stopped by user")
+        print("\nShutting down servers...")
+        cleanup_processes()
+        print("Server stopped")
     except Exception as e:
-        print(f"❌ Error starting server: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Server error: {e}")
+        cleanup_processes()
