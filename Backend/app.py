@@ -50,7 +50,7 @@ active_tokens = {}
 mysql = None
 try:
     mysql = init_db(app)
-    print("✅ Database connection configured successfully")
+    print("Database connection configured successfully")
 except Exception as e:
     print(f"Database initialization error: {e}")
     mysql = None
@@ -122,13 +122,13 @@ def load_nba_data():
     try:
         with open('nba_2024_25_data.pkl', 'rb') as f:
             nba_data = pickle.load(f)
-        print(f"✅ Loaded {len(nba_data)} NBA players from pickle file")
+        print(f"Loaded {len(nba_data)} NBA players from pickle file")
         return True
     except FileNotFoundError:
-        print("⚠️ NBA data file 'nba_2024_25_data.pkl' not found.")
+        print("NBA data file 'nba_2024_25_data.pkl' not found.")
         return False
     except Exception as e:
-        print(f"⚠️ Error loading NBA data: {e}")
+        print(f"Error loading NBA data: {e}")
         return False
 
 def get_player_stats_summary(player_data):
