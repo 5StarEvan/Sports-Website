@@ -21,14 +21,20 @@ class DatabaseConfig:
 db_config = DatabaseConfig()
 
 def init_db(app):
-    app.config['MYSQL_HOST'] = db_config.MYSQL_HOST
-    app.config['MYSQL_USER'] = db_config.MYSQL_USER
-    app.config['MYSQL_PASSWORD'] = db_config.MYSQL_PASSWORD
-    app.config['MYSQL_DB'] = db_config.MYSQL_DB
-    app.secret_key = db_config.SECRET_KEY
-    
-    mysql = MySQL(app)
-    return mysql
+
+    try:
+        app.config['MYSQL_HOST'] = db_config.MYSQL_HOST
+        app.config['MYSQL_USER'] = db_config.MYSQL_USER
+        app.config['MYSQL_PASSWORD'] = db_config.MYSQL_PASSWORD
+        app.config['MYSQL_DB'] = db_config.MYSQL_DB
+        app.secret_key = db_config.SECRET_KEY
+        
+
+        mysql = MySQL(app)
+        return mysql
+    except Exception as e:
+        print(f"Error configuring database: {e}")
+        raise
 
 def get_user_by_email(mysql: MySQL, email: str) -> Optional[Dict]:
     try:

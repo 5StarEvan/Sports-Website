@@ -12,7 +12,7 @@ import secrets
 from typing import Dict, List, Optional
 
 
-# Import our existing modules
+
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
     AI_AVAILABLE = True
@@ -21,10 +21,9 @@ except ImportError:
     AI_AVAILABLE = False
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app) 
 
 
-# Global variable to store NBA data
 nba_data = None
 
 def load_nba_data():

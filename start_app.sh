@@ -15,7 +15,7 @@ trap cleanup EXIT INT TERM
 # Start backend API
 echo "Starting backend API server..."
 cd Backend
-python api.py &
+python app.py &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start

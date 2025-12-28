@@ -12,19 +12,98 @@ import secrets
 from typing import Dict, List, Optional
 from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
-#--------------------------------------------------------------------------------------------------------------------------
+try:
+    from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
+    AI_AVAILABLE = True
+except ImportError as e:
+    print(f"AI predictions module not available: {e}")
+    AI_AVAILABLE = False
+
+
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "*"}})  
+
+
+mysql = None
 try:
     mysql = init_db(app)
-    print("✅ Database connection initialized")
+    print("✅ Database connection configured successfully")
+    print(f"   MySQL Host: {app.config.get('MYSQL_HOST', 'not set')}")
+    print(f"   MySQL Database: {app.config.get('MYSQL_DB', 'not set')}")
+    print(f"   MySQL User: {app.config.get('MYSQL_USER', 'not set')}")
 except Exception as e:
     print(f"Database initialization error: {e}")
     print("Authentication features may not work without database connection")
+    print("Server will continue to run, but auth endpoints will return errors")
     mysql = None
-#--------------------------------------------------------------------------------------------------------------------------\
 
+
+nba_data = None
+
+def load_nba_data():
+    """Load NBA player data from pickle file"""
+    global nba_data
+    try:
+        with open('nba_2024_25_data.pkl', 'rb') as f:
+            nba_data = pickle.load(f)
+        print(f" Loaded {len(nba_data)} NBA players from pickle file")
+        return True
+    except FileNotFoundError:
+        print(" NBA data file 'nba_2024_25_data.pkl' not found.")
+        return False
+    except Exception as e:
+        print(f" Error loading NBA data: {e}")
+        return False
+
+def get_player_stats_summary(player_data):
+    """Convert player data to a more readable format"""
+    
+    # Calculate actual trends from current vs previous season
+    ppg_current = player_data.get('PPG_LAST', player_data.get('ppg_last', 0))
+    ppg_prev = player_data.get('PPG_PREV', player_data.get('ppg_prev', ppg_current))
+    ppg_trend = round(ppg_current - ppg_prev, 2) if ppg_prev else 0
+    
+    apg_current = player_data.get('APG_LAST', player_data.get('apg_last', 0))
+    apg_prev = player_data.get('APG_PREV', player_data.get('apg_prev', apg_current))
+    apg_trend = round(apg_current - apg_prev, 2) if apg_prev else 0
+    
+    rpg_current = player_data.get('RPG_LAST', player_data.get('rpg_last', 0))
+    rpg_prev = player_data.get('RPG_PREV', player_data.get('rpg_prev', rpg_current))
+    rpg_trend = round(rpg_current - rpg_prev, 2) if rpg_prev else 0
+    
+    # Calculate consistency score from standard deviation
+    ppg_std = player_data.get('PPG_STD', player_data.get('ppg_std', 5))
+    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)  # Higher = more consistent
+    
+    return {
+        'id': player_data.get('PLAYER_ID', player_data.get('player_id', hash(player_data.get('PLAYER_NAME', '')))),
+        'name': player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown')),
+        'team': player_data.get('TEAM', player_data.get('team', 'UNK')),
+        'position': player_data.get('POSITION', player_data.get('position', 'UNK')),
+        'age': player_data.get('AGE', player_data.get('age', 0)),
+        'height': player_data.get('HEIGHT', player_data.get('height', 0)),
+        'weight': player_data.get('WEIGHT', player_data.get('weight', 0)),
+        'stats': {
+            'ppg_last': round(ppg_current, 1),
+            'apg_last': round(apg_current, 1),
+            'rpg_last': round(rpg_current, 1),
+            'spg_last': round(player_data.get('SPG_LAST', player_data.get('spg_last', 0)), 1),
+            'bpg_last': round(player_data.get('BPG_LAST', player_data.get('bpg_last', 0)), 1),
+            'fg_pct_last': round(player_data.get('FG_PCT_LAST', player_data.get('fg_pct_last', 0)) * 100, 1),
+            'fg3_pct_last': round(player_data.get('FG3_PCT_LAST', player_data.get('fg3_pct_last', 0)) * 100, 1),
+            'ft_pct_last': round(player_data.get('FT_PCT_LAST', player_data.get('ft_pct_last', 0)) * 100, 1),
+            'games_played': player_data.get('GAMES_PLAYED_LAST', player_data.get('games_played_last', 0))
+        },
+        'trends': {
+            'ppg_trend': round(player_data.get('PPGTREND', ppg_trend), 2),
+            'apg_trend': round(player_data.get('APGTREND', apg_trend), 2),
+            'rpg_trend': round(player_data.get('RPGTREND', rpg_trend), 2),
+            'consistency_score': round(player_data.get('CONSISTENCYSCORE', consistency_score), 2)
+        }
+    }
+
+#--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
 @app.route('/api/auth/signup', methods=['POST'])
@@ -102,6 +181,12 @@ def logout():
 
 @app.route('/api/auth/verify', methods=['GET'])
 def verify():
+    if not mysql:
+        return jsonify({
+            'authenticated': False,
+            'message': 'Database connection not available'
+        }), 500
+    
     try:
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
@@ -137,83 +222,10 @@ def verify():
             'authenticated': False,
             'message': 'Error verifying token'
         }), 500
+
 #--------------------------------------------------------------------------------------------------------------------------
-
-try:
-    from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
-    AI_AVAILABLE = True
-except ImportError as e:
-    #print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
-    print(e);
-    AI_AVAILABLE = False
-
-app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})  # Enable CORS for all routes
-
-# Global variable to store NBA data
-nba_data = None
-
-def load_nba_data():
-    """Load NBA player data from pickle file"""
-    global nba_data
-    try:
-        with open('nba_2024_25_data.pkl', 'rb') as f:
-            nba_data = pickle.load(f)
-        print(f"✅ Loaded {len(nba_data)} NBA players from pickle file")
-        return True
-    except FileNotFoundError:
-        print("❌ NBA data file 'nba_2024_25_data.pkl' not found.")
-        return False
-    except Exception as e:
-        print(f"❌ Error loading NBA data: {e}")
-        return False
-
-def get_player_stats_summary(player_data):
-    """Convert player data to a more readable format"""
-    
-    # Calculate actual trends from current vs previous season
-    ppg_current = player_data.get('PPG_LAST', player_data.get('ppg_last', 0))
-    ppg_prev = player_data.get('PPG_PREV', player_data.get('ppg_prev', ppg_current))
-    ppg_trend = round(ppg_current - ppg_prev, 2) if ppg_prev else 0
-    
-    apg_current = player_data.get('APG_LAST', player_data.get('apg_last', 0))
-    apg_prev = player_data.get('APG_PREV', player_data.get('apg_prev', apg_current))
-    apg_trend = round(apg_current - apg_prev, 2) if apg_prev else 0
-    
-    rpg_current = player_data.get('RPG_LAST', player_data.get('rpg_last', 0))
-    rpg_prev = player_data.get('RPG_PREV', player_data.get('rpg_prev', rpg_current))
-    rpg_trend = round(rpg_current - rpg_prev, 2) if rpg_prev else 0
-    
-    # Calculate consistency score from standard deviation
-    ppg_std = player_data.get('PPG_STD', player_data.get('ppg_std', 5))
-    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)  # Higher = more consistent
-    
-    return {
-        'id': player_data.get('PLAYER_ID', player_data.get('player_id', hash(player_data.get('PLAYER_NAME', '')))),
-        'name': player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown')),
-        'team': player_data.get('TEAM', player_data.get('team', 'UNK')),
-        'position': player_data.get('POSITION', player_data.get('position', 'UNK')),
-        'age': player_data.get('AGE', player_data.get('age', 0)),
-        'height': player_data.get('HEIGHT', player_data.get('height', 0)),
-        'weight': player_data.get('WEIGHT', player_data.get('weight', 0)),
-        'stats': {
-            'ppg_last': round(ppg_current, 1),
-            'apg_last': round(apg_current, 1),
-            'rpg_last': round(rpg_current, 1),
-            'spg_last': round(player_data.get('SPG_LAST', player_data.get('spg_last', 0)), 1),
-            'bpg_last': round(player_data.get('BPG_LAST', player_data.get('bpg_last', 0)), 1),
-            'fg_pct_last': round(player_data.get('FG_PCT_LAST', player_data.get('fg_pct_last', 0)) * 100, 1),
-            'fg3_pct_last': round(player_data.get('FG3_PCT_LAST', player_data.get('fg3_pct_last', 0)) * 100, 1),
-            'ft_pct_last': round(player_data.get('FT_PCT_LAST', player_data.get('ft_pct_last', 0)) * 100, 1),
-            'games_played': player_data.get('GAMES_PLAYED_LAST', player_data.get('games_played_last', 0))
-        },
-        'trends': {
-            'ppg_trend': round(player_data.get('PPGTREND', ppg_trend), 2),
-            'apg_trend': round(player_data.get('APGTREND', apg_trend), 2),
-            'rpg_trend': round(player_data.get('RPGTREND', rpg_trend), 2),
-            'consistency_score': round(player_data.get('CONSISTENCYSCORE', consistency_score), 2)
-        }
-    }
+# NBA DATA ROUTES
+#--------------------------------------------------------------------------------------------------------------------------
 
 @app.route('/', methods=['GET'])
 def root():
@@ -245,7 +257,8 @@ def health_check():
         'status': 'healthy',
         'message': 'NBA API server is running',
         'ai_available': AI_AVAILABLE,
-        'players_loaded': len(nba_data) if nba_data else 0
+        'players_loaded': len(nba_data) if nba_data else 0,
+        'database_connected': mysql is not None
     })
 
 @app.route('/api/players', methods=['GET'])
@@ -513,7 +526,8 @@ if __name__ == '__main__':
         print("🛑 Press Ctrl+C to stop the server")
         print("="*50 + "\n")
         
-        app.run(debug=False, host='127.0.0.1', port=5000, threaded=True)
+        # Run server - use 0.0.0.0 to allow connections from any interface (including proxy)
+        app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
         
     except KeyboardInterrupt:
         print("\n🛑 Server stopped by user")
