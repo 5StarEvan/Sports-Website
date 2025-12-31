@@ -74,8 +74,8 @@ class NBAAISystem:
         print("🏀 Initializing NBA AI System...")
         
         # Check if data exists
-        data_file = os.path.join(os.path.dirname(__file__), 'nba_2024_25_data.pkl')
-        model_file = os.path.join(os.path.dirname(__file__), 'nba_ai_model.pkl')
+        data_file = os.path.join(os.path.dirname(__file__), 'Backend/nba_2024_25_data.pkl')
+        model_file = os.path.join(os.path.dirname(__file__), 'Backend/nba_ai_model.pkl')
         
         if os.path.exists(data_file) and os.path.exists(model_file) and not force_refresh:
             print("✅ Found existing data and model")
