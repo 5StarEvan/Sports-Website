@@ -24,3 +24,29 @@ dist-ssr
 *.sw?
 
 .env
+# Python virtual environments
+venv/
+.venv/
+cleanenv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Large ML models and data
+*.pkl
+*.h5
+*.pt
+*.pth
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
