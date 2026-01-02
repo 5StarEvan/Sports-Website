@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { buildApiUrl } from '../config/api';
 
 const endpoints = [
-  { label: "Health (app.py)", endpoint: "health" },
-  { label: "AI Predictions (app.py)", endpoint: "ai-predictions" },
-  { label: "Predictions (api.py)", endpoint: "predictions" },
+  { label: "Health (app.py)", url: "http://127.0.0.1:5000/api/health" },
+  { label: "AI Predictions (app.py)", url: "http://127.0.0.1:5000/api/ai-predictions" },
+  { label: "Predictions (api.py)", url: "http://127.0.0.1:5000/api/predictions" },
 ];
 
 export default function DebugPanel() {
@@ -15,15 +14,14 @@ export default function DebugPanel() {
     const check = async () => {
       const checks = await Promise.all(
         endpoints.map(async (e) => {
-          const url = buildApiUrl(e.endpoint);
           try {
-            const res = await fetch(url, { method: "GET" });
+            const res = await fetch(e.url, { method: "GET" });
             const ok = res.ok;
             let body = null;
             try { body = await res.json(); } catch {}
-            return { label: e.label, url: url, ok, status: res.status, body };
+            return { label: e.label, url: e.url, ok, status: res.status, body };
           } catch (err) {
-            return { label: e.label, url: url, ok: false, error: String(err) };
+            return { label: e.label, url: e.url, ok: false, error: String(err) };
           }
         })
       );

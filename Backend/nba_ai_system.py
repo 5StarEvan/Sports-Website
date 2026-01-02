@@ -1,9 +1,3 @@
-import sys
-import io
-# Fix Windows console encoding for emojis
-if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 import pandas as pd
 import numpy as np
@@ -88,7 +82,13 @@ class NBAAISystem:
             self.data = self.scraper.load_data()
             if self.data and self.load_model():
                 self.model_trained = True
-        return True
+                return True
+            else:
+                print("❌ Failed to load model")
+                return False
+        else:
+            print("❌ No existing data or model found")
+            return False
         
         # Scrape new data
         print("🔄 Scraping NBA data for 2024-25 season...")
@@ -264,6 +264,7 @@ class NBAAISystem:
         """Get top predicted performers"""
         if not self.model_trained:
             print("System not initialized. Please run initialize_system() first.")
+            self.initialize_system()
             return None
         
         X, _, df = self.prepare_data()
@@ -299,6 +300,7 @@ class NBAAISystem:
         """Find players predicted to overperform"""
         if not self.model_trained:
             print("System not initialized. Please run initialize_system() first.")
+            self.initialize_system()
             return None
         
         X, _, df = self.prepare_data()
@@ -365,6 +367,7 @@ class NBAAISystem:
         """Get prediction for a specific player"""
         if not self.model_trained:
             print("System not initialized. Please run initialize_system() first.")
+            self.initialize_system()
             return None
         
         # Find player in data
@@ -450,6 +453,9 @@ class NBAAISystem:
 # Global instance for easy import
 nba_ai_system = NBAAISystem()
 
+def initialize_system():
+    """Initialize the NBA AI system"""
+    return nba_ai_system.initialize_system()
 # Convenience functions for direct import
 def initialize_nba_ai(force_refresh=False):
     """Initialize the NBA AI system"""

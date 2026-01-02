@@ -1,0 +1,5 @@
+# Database requirements (Flask and MySQL)
+flask>=2.3.0
+flask-mysqldb>=1.0.1
+python-dotenv>=1.0.0
+werkzeug>=3.0.0

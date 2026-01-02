@@ -8,9 +8,11 @@ from flask_cors import CORS
 import pickle
 import json
 import os
+import secrets
 from typing import Dict, List, Optional
 
-# Import our existing modules
+
+
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
     AI_AVAILABLE = True
@@ -19,9 +21,9 @@ except ImportError:
     AI_AVAILABLE = False
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app) 
 
-# Global variable to store NBA data
+
 nba_data = None
 
 def load_nba_data():
@@ -250,6 +252,8 @@ def get_stat_leaders():
         'rpg_leaders': format_leaders(rpg_leaders, 'RPG_LAST', 'Rebounds Per Game')
     })
 
+
+
 if __name__ == '__main__':
     try:
         # Load NBA data on startup
@@ -316,26 +320,26 @@ if __name__ == '__main__':
         # Initialize AI system if available
         if AI_AVAILABLE:
             try:
-                print("🔄 Initializing AI system...")
+                print("Initializing AI system...")
                 initialize_nba_ai()
-                print("✅ AI system initialized successfully")
+                print("AI system initialized successfully")
             except Exception as e:
-                print(f"⚠️ AI system initialization failed: {e}")
+                print(f"AI system initialization failed: {e}")
         
         print("\n" + "="*50)
-        print("🚀 Starting NBA API server...")
-        print("🌐 Server URL: http://localhost:5000")
-        print("🔗 Health Check: http://localhost:5000/api/health")
-        print("👥 Players API: http://localhost:5000/api/players")
+        print("Starting NBA API server...")
+        print("Server URL: http://localhost:5000")
+        print("Health Check: http://localhost:5000/api/health")
+        print("Players API: http://localhost:5000/api/players")
         print("="*50)
-        print("🛑 Press Ctrl+C to stop the server")
+        print(" Press Ctrl+C to stop the server")
         print("="*50 + "\n")
         
         app.run(debug=False, host='127.0.0.1', port=5000, threaded=True)
         
     except KeyboardInterrupt:
-        print("\n🛑 Server stopped by user")
+        print("\n Server stopped by user")
     except Exception as e:
-        print(f"❌ Error starting server: {e}")
+        print(f" Error starting server: {e}")
         import traceback
         traceback.print_exc()

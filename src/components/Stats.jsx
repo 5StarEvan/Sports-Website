@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { isFavorite, toggleFavorite, getFavorites } from '../utils/favorites';
-import { buildApiUrl } from '../config/api';
 import './Stats.css';
 
 const Stats = () => {
@@ -20,6 +19,8 @@ const Stats = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
   const [favorites, setFavorites] = useState(new Set()); // Track favorites for re-renders
+
+  const API_BASE_URL = 'http://localhost:5000/api';
 
   // Load favorites on mount
   useEffect(() => {
@@ -61,7 +62,7 @@ const Stats = () => {
       if (selectedTeam) params.append('team', selectedTeam);
       if (selectedPosition) params.append('position', selectedPosition);
 
-      const response = await fetch(`${buildApiUrl('players')}?${params}`);
+      const response = await fetch(`${API_BASE_URL}/players?${params}`);
       if (!response.ok) throw new Error('Failed to fetch players');
       
       const data = await response.json();
@@ -77,7 +78,7 @@ const Stats = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch(buildApiUrl('teams'));
+      const response = await fetch(`${API_BASE_URL}/teams`);
       if (response.ok) {
         const data = await response.json();
         setTeams(data.teams || []);
@@ -89,7 +90,7 @@ const Stats = () => {
 
   const fetchPositions = async () => {
     try {
-      const response = await fetch(buildApiUrl('positions'));
+      const response = await fetch(`${API_BASE_URL}/positions`);
       if (response.ok) {
         const data = await response.json();
         setPositions(data.positions || []);
@@ -216,9 +217,7 @@ const Stats = () => {
         <div className="error">
           Error: {error}
           <br />
-          {import.meta.env.DEV 
-            ? 'Make sure the Flask API server is running on http://localhost:5000'
-            : 'Unable to connect to backend API. Please check your API configuration.'}
+          Make sure the Flask API server is running on http://localhost:5000
         </div>
       </div>
     );

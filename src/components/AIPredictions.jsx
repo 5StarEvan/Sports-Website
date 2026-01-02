@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { buildApiUrl } from '../config/api';
 import "./AIPredictions.css";
 
 const AIPredictions = () => {
@@ -14,7 +13,7 @@ const AIPredictions = () => {
   const [activeTab, setActiveTab] = useState('scorers');
 
   useEffect(() => {
-    const API_URL = buildApiUrl('ai-predictions');
+    const API_URL = "/api/ai-predictions";
     const fetchPredictions = async () => {
       try {
         const response = await fetch(API_URL);

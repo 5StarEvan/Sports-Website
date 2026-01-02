@@ -1,0 +1,206 @@
+.signup-wrapper {
+  height: 100vh;
+  background: #fff;
+  font-family: 'Oswald', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.signup-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 50%, #111111 50%, #111111 100%);
+  z-index: 0;
+  opacity: 0.1;
+}
+
+.signup-container {
+  background: #fff;
+  border: 3px solid #111;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+.signup-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.basketball-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.signup-title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #111;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: inherit;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.form-group input {
+  padding: 0.7rem 0.9rem;
+  border: 2px solid #111;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #fff;
+  color: #111;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.form-group input.error {
+  border-color: #e53935;
+}
+
+.error-message {
+  font-size: 0.75rem;
+  color: #e53935;
+  font-weight: 600;
+  margin-top: -0.25rem;
+}
+
+.signup-submit-btn {
+  padding: 0.8rem 1.5rem;
+  background: #111;
+  color: #fff;
+  border: 2px solid #111;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  margin-top: 0.3rem;
+}
+
+.signup-submit-btn:hover {
+  background: #e53935;
+  border-color: #e53935;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+}
+
+.signup-submit-btn:active {
+  transform: translateY(0);
+}
+
+.signup-footer {
+  margin-top: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.signup-footer p {
+  margin: 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.signup-link {
+  color: #e53935;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.signup-link:hover {
+  color: #111;
+  text-decoration: underline;
+}
+
+.submit-error {
+  background: #ffebee;
+  border: 2px solid #e53935;
+  color: #c62828;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.signup-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .signup-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .signup-title {
+    font-size: 1.5rem;
+  }
+
+  .basketball-icon {
+    font-size: 1.8rem;
+  }
+
+  .signup-header {
+    margin-bottom: 1rem;
+  }
+
+  .signup-form {
+    gap: 0.8rem;
+  }
+}
+
