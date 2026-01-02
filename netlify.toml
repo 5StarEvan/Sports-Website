@@ -1,0 +1,27 @@
+# Netlify configuration for NBA Sports Website Frontend
+
+[build]
+  # Build command for Vite
+  command = "npm run build"
+  # Output directory where Vite builds the production files
+  publish = "dist"
+
+# Environment variables (set these in Netlify dashboard)
+# VITE_API_URL should be set to your backend URL (e.g., https://nba-api-xxxx.onrender.com/api)
+# Go to: Site settings → Environment variables → Add variable
+
+# Redirect all routes to index.html for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and CORS
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
