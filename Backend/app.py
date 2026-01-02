@@ -22,8 +22,8 @@ try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
     AI_AVAILABLE = True
 except ImportError as e:
-    #print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
-    print(e);
+    print("AI predictions module not available. Install PyTorch dependencies to enable AI features.")
+    print(f"Import error: {e}")
     AI_AVAILABLE = False
 
 app = Flask(__name__)
@@ -383,16 +383,24 @@ if __name__ == '__main__':
             except Exception as e:
                 print(f"⚠️ AI system initialization failed: {e}")
         
+        # Get host and port from environment variables (for production)
+        # Render, Railway, and other platforms set PORT automatically
+        host = os.environ.get('HOST', '0.0.0.0')  # 0.0.0.0 allows external connections
+        port = int(os.environ.get('PORT', 5000))
+        
         print("\n" + "="*50)
         print("🚀 Starting NBA API server...")
-        print("🌐 Server URL: http://localhost:5000")
-        print("🔗 Health Check: http://localhost:5000/api/health")
-        print("👥 Players API: http://localhost:5000/api/players")
+        print(f"🌐 Server URL: http://{host}:{port}")
+        print(f"🔗 Health Check: http://{host}:{port}/api/health")
+        print(f"👥 Players API: http://{host}:{port}/api/players")
         print("="*50)
-        print("🛑 Press Ctrl+C to stop the server")
+        if os.environ.get('PORT'):
+            print("📦 Running in production mode")
+        else:
+            print("🛑 Press Ctrl+C to stop the server")
         print("="*50 + "\n")
         
-        app.run(debug=False, host='127.0.0.1', port=5000, threaded=True)
+        app.run(debug=False, host=host, port=port, threaded=True)
         
     except KeyboardInterrupt:
         print("\n🛑 Server stopped by user")
