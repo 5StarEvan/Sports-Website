@@ -53,9 +53,10 @@ const Stats = () => {
   const fetchPlayers = async () => {
     try {
       setLoading(true);
+      // Use stats/all endpoint to get all players, or players endpoint with higher limit
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '100'  // Show 100 players per page
+        limit: '1000'  // Show more players per page to display all
       });
       
       if (searchTerm) params.append('search', searchTerm);
