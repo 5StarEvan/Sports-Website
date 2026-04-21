@@ -27,10 +27,10 @@ app = Flask(__name__)
 AO = os.environ.get('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 CORS(app, resources={
     r"/api/*": {
-        "origins": AO,
+        "origins": "*",
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
+        "supports_credentials": False
     }
 })
 
@@ -490,9 +490,12 @@ def get_ai_predictions():
             'ai_available': True
         })
     except Exception as e:
-        print(f"AI prediction error: {e}")
+        import traceback
+        trace_str = traceback.format_exc()
+        print(f"AI prediction error: {trace_str}")
         return jsonify({
-            'error': 'Error generating predictions',
+            'error': f'Error generating predictions: {str(e)}',
+            'trace': trace_str,
             'ai_available': True
         }), 500
 
@@ -571,7 +574,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGTERM, signal_handler)
     
     try:
-        print("🌐 Starting frontend development server...")
+        print("Starting frontend development server...")
         backend_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(backend_dir)
         
@@ -589,7 +592,7 @@ if __name__ == '__main__':
             except Exception as e:
                 print(f"Frontend startup failed: {e}")
         
-        print("\n🔄 Loading NBA data...")
+        print("\nLoading NBA data...")
         if load_nba_data():
             print(f"NBA data loaded - {len(nba_data)} players")
             for i, player in enumerate(nba_data[:5]):

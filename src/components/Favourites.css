@@ -1,114 +1,139 @@
+/* ----------------------------------
+   Favourites Component Styles
+---------------------------------- */
 .favourites-wrapper {
   min-height: 100vh;
-  background: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
-  padding: 2rem;
-  padding-top: 100px;
+  background: var(--bg-main, #0a0a0c);
+  color: var(--text-primary, #f0f0f0);
+  padding: 100px 2rem 4rem;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  position: relative;
+  z-index: 2;
 }
 
 .favourites-header {
   text-align: center;
   margin-bottom: 3rem;
+  position: relative;
+  z-index: 10;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 1.5rem;
-  color: #111;
+  margin-bottom: 2rem;
+  color: #fff;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid #111;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  padding: 0.8rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  transition: all var(--transition-smooth, 0.3s);
+  backdrop-filter: blur(10px);
+  font-family: var(--font-heading, 'Outfit', sans-serif);
 }
 
 .back-link:hover {
-  background: #111;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-primary, #ff4500);
 }
 
 .favourites-title {
-  font-size: 3rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 3.5rem;
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #111;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .title-icon {
   font-size: 3rem;
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
 }
 
 .favourites-subtitle {
   font-size: 1.2rem;
-  color: #666;
-  margin: 0;
+  color: var(--text-secondary, #a0a0a8);
+  max-width: 700px;
+  margin: 0 auto;
 }
 
+/* ----------------------------------
+   Empty State
+---------------------------------- */
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
   max-width: 600px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #f8f8f8 0%, #fff 100%);
-  border: 3px solid #111;
-  border-radius: 12px;
+  background: var(--bg-glass, rgba(18, 18, 22, 0.65));
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
 .empty-icon {
   font-size: 5rem;
   margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.3));
 }
 
 .empty-title {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
   font-size: 2rem;
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  color: #111;
+  color: #fff;
   margin: 0 0 1rem 0;
 }
 
 .empty-description {
   font-size: 1.1rem;
-  color: #666;
-  margin: 0 0 2rem 0;
+  color: var(--text-secondary, #a0a0a8);
+  margin: 0 0 2.5rem 0;
   line-height: 1.8;
 }
 
 .empty-cta {
   display: inline-block;
   padding: 1rem 2.5rem;
-  background: #e53935;
+  background: linear-gradient(45deg, var(--accent-secondary, #e53935), var(--accent-primary, #ff4500));
   color: #fff;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 30px;
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  transition: all 0.3s ease;
-  border: 2px solid #e53935;
+  transition: all var(--transition-smooth, 0.4s);
+  border: none;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  box-shadow: 0 8px 25px var(--accent-glow, rgba(255, 69, 0, 0.5));
 }
 
 .empty-cta:hover {
-  background: #c62828;
-  border-color: #c62828;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 35px rgba(255, 69, 0, 0.8);
 }
 
+/* ----------------------------------
+   Content Grid
+---------------------------------- */
 .favourites-content {
   max-width: 1400px;
   margin: 0 auto;
@@ -116,15 +141,17 @@
 
 .favourites-info {
   text-align: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 }
 
 .info-text {
-  font-size: 1rem;
-  color: #666;
+  font-size: 1.1rem;
+  color: var(--text-primary, #f0f0f0);
   margin: 0;
   font-weight: 600;
 }
@@ -132,15 +159,17 @@
 .favourites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .favourite-card {
-  background: #fff;
-  border: 3px solid #111;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.3s ease;
+  background: var(--bg-glass, rgba(18, 18, 22, 0.65));
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  padding: 2.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all var(--transition-smooth, 0.4s);
   position: relative;
   overflow: hidden;
 }
@@ -151,27 +180,27 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #e53935 0%, #c62828 100%);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.favourite-card:hover::before {
-  transform: scaleX(1);
+  height: 4px;
+  background: linear-gradient(90deg, #ffd700, var(--accent-primary, #ff4500));
+  opacity: 0.5;
+  transition: opacity var(--transition-fast, 0.2s);
 }
 
 .favourite-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(229, 57, 53, 0.25);
-  border-color: #e53935;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+}
+
+.favourite-card:hover::before {
+  opacity: 1;
 }
 
 .card-header-fav {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .player-header-info {
@@ -179,49 +208,52 @@
 }
 
 .player-name-fav {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #111;
+  color: #fff;
   margin: 0 0 1rem 0;
 }
 
 .player-meta-fav {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-.team-badge-fav,
-.position-badge-fav {
-  padding: 0.4rem 1rem;
+.team-badge-fav, .position-badge-fav {
+  padding: 0.4rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
+  border: 1px solid;
 }
 
 .team-badge-fav {
-  background: #e53935;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
 .position-badge-fav {
-  background: #111;
-  color: #fff;
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
 }
 
 .favorite-btn-fav {
   background: transparent;
   border: 2px solid #ffd700;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 1.3rem;
+  width: 45px;
+  height: 45px;
+  font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #ffd700;
+  transition: all var(--transition-fast, 0.2s);
+  color: rgba(255, 215, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,11 +263,15 @@
 .favorite-btn-fav:hover {
   background: rgba(255, 215, 0, 0.1);
   transform: scale(1.1) rotate(10deg);
+  color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .favorite-btn-fav.favorited {
-  background: rgba(255, 215, 0, 0.1);
-  animation: favoritePulse 0.5s ease;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  animation: favoritePulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 @keyframes favoritePulse {
@@ -245,132 +281,141 @@
 }
 
 .player-info-fav {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .player-details-fav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.95rem;
-  color: #666;
+  gap: 1.5rem;
+  font-size: 1rem;
+  color: var(--text-secondary, #a0a0a8);
 }
 
 .player-details-fav span {
   font-weight: 600;
+  color: #fff;
 }
 
-.player-stats-fav,
-.player-trends-fav {
-  margin-bottom: 1.5rem;
+/* ----------------------------------
+   Stats & Trends
+---------------------------------- */
+.player-stats-fav, .player-trends-fav {
+  margin-bottom: 2rem;
 }
 
-.stats-title,
-.trends-title {
-  font-size: 1.2rem;
-  font-weight: 700;
+.stats-title, .trends-title {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.3rem;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #111;
-  margin: 0 0 1rem 0;
+  color: #fff;
+  margin: 0 0 1.2rem 0;
 }
 
 .stats-grid-fav {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .stat-item-fav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem;
-  background: #f5f5f5;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all var(--transition-fast, 0.2s);
 }
 
 .stat-item-fav:hover {
-  background: #eee;
+  background: rgba(0, 0, 0, 0.5);
   transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .stat-label-fav {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a0a0a8);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .stat-value-fav {
-  font-size: 1.2rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.5rem;
   font-weight: 900;
-  color: #e53935;
+  color: var(--accent-primary, #ff4500);
 }
 
 .trends-grid-fav {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .trend-item-fav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .trend-label-fav {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a0a0a8);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .trend-value-fav {
-  font-size: 1.1rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.3rem;
   font-weight: 900;
 }
 
 .trend-value-fav.positive {
   color: #4caf50;
+  text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
 .trend-value-fav.negative {
-  color: #e53935;
+  color: var(--accent-secondary, #e53935);
+  text-shadow: 0 0 10px rgba(229, 57, 53, 0.3);
 }
 
 .loading-state {
   text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #111;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
   padding: 5rem 2rem;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
 }
 
 @media (max-width: 900px) {
   .favourites-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
-
   .favourites-grid {
     grid-template-columns: 1fr;
   }
-
   .stats-grid-fav {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .trends-grid-fav {
     grid-template-columns: 1fr;
   }
@@ -380,10 +425,8 @@
   .stats-grid-fav {
     grid-template-columns: 1fr;
   }
-
   .player-details-fav {
     flex-direction: column;
     gap: 0.5rem;
   }
 }
-

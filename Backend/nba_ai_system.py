@@ -71,14 +71,14 @@ class NBAAISystem:
         
     def initialize_system(self, force_refresh=False):
         """Initialize the complete system with data and model"""
-        print("🏀 Initializing NBA AI System...")
+        print("Initializing NBA AI System...")
         
         # Check if data exists
         data_file = os.path.join(os.path.dirname(__file__), 'nba_2024_25_data.pkl')
         model_file = os.path.join(os.path.dirname(__file__), 'nba_ai_model.pkl')
         
         if os.path.exists(data_file) and os.path.exists(model_file) and not force_refresh:
-            print("✅ Found existing data and model")
+            print("Found existing data and model")
             self.data = self.scraper.load_data()
             if self.data and self.load_model():
                 self.model_trained = True
@@ -106,10 +106,10 @@ class NBAAISystem:
         if self.train_model():
             self.save_model()
             self.model_trained = True
-            print("✅ System initialized successfully!")
+            print("System initialized successfully!")
             return True
         else:
-            print("❌ Failed to train model")
+            print("Failed to train model")
         return False
 
     def prepare_data(self):

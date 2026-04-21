@@ -1,62 +1,73 @@
+/* ----------------------------------
+   Recommendations Component Styles
+---------------------------------- */
 .recommendations-wrapper {
   min-height: 100vh;
-  background: #fff;
-  font-family: 'Oswald', Arial, sans-serif;
-  padding: 2rem;
-  padding-top: 100px;
+  background: var(--bg-main, #0a0a0c);
+  color: var(--text-primary, #f0f0f0);
+  padding: 100px 2rem 4rem;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  position: relative;
+  z-index: 2;
 }
 
 .recommendations-header {
   text-align: center;
   margin-bottom: 3rem;
+  position: relative;
+  z-index: 10;
 }
 
 .back-link {
   display: inline-block;
-  margin-bottom: 1.5rem;
-  color: #111;
+  margin-bottom: 2rem;
+  color: #fff;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid #111;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  padding: 0.8rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  transition: all var(--transition-smooth, 0.3s);
+  backdrop-filter: blur(10px);
+  font-family: var(--font-heading, 'Outfit', sans-serif);
 }
 
 .back-link:hover {
-  background: #111;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-primary, #ff4500);
 }
 
 .recommendations-title {
-  font-size: 3rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 3.5rem;
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #111;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .title-icon {
   font-size: 3rem;
+  filter: drop-shadow(0 0 15px var(--accent-glow, rgba(255, 69, 0, 0.5)));
 }
 
 .recommendations-subtitle {
   font-size: 1.2rem;
-  color: #666;
-  margin: 0;
+  color: var(--text-secondary, #a0a0a8);
   max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
 .recommendations-content {
@@ -64,52 +75,63 @@
   margin: 0 auto;
 }
 
+/* ----------------------------------
+   Category Tabs
+---------------------------------- */
 .category-tabs {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+  flex-wrap: wrap;
 }
 
 .tab-button {
   padding: 1rem 2.5rem;
-  background: #fff;
-  color: #111;
-  border: 2px solid #111;
-  border-radius: 4px;
+  background: var(--bg-glass, rgba(18, 18, 22, 0.65));
+  color: var(--text-secondary, #a0a0a8);
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: 30px;
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: inherit;
+  transition: all var(--transition-smooth, 0.4s);
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  backdrop-filter: blur(10px);
 }
 
 .tab-button:hover {
-  background: #f5f5f5;
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .tab-button.active {
-  background: #e53935;
+  background: linear-gradient(45deg, var(--accent-secondary, #e53935), var(--accent-primary, #ff4500));
   color: #fff;
-  border-color: #e53935;
+  border-color: transparent;
+  box-shadow: 0 10px 25px var(--accent-glow, rgba(255, 69, 0, 0.5));
 }
 
+/* ----------------------------------
+   Section Headings
+---------------------------------- */
 .recommendations-section {
-  margin-bottom: 4rem;
+  margin-bottom: 5rem;
 }
 
 .section-heading {
-  font-size: 2rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 2.5rem;
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: #111;
+  color: #fff;
   text-align: center;
   margin-bottom: 1rem;
-  position: relative;
 }
 
 .section-heading::after {
@@ -117,62 +139,71 @@
   display: block;
   width: 80px;
   height: 4px;
-  background: #e53935;
-  margin: 1rem auto 0;
+  background: var(--accent-primary, #ff4500);
+  margin: 1.5rem auto 0;
+  box-shadow: 0 0 15px var(--accent-glow, rgba(255, 69, 0, 0.5));
+  border-radius: 2px;
 }
 
 .section-description {
-  font-size: 1.1rem;
-  color: #666;
+  font-size: 1.15rem;
+  color: var(--text-secondary, #a0a0a8);
   text-align: center;
   max-width: 700px;
   margin: 0 auto 3rem;
-  line-height: 1.8;
+  line-height: 1.7;
 }
 
-.recommendations-grid {
+/* ----------------------------------
+   Grid & Cards
+---------------------------------- */
+.recommendations-grid, .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2.5rem;
 }
 
-.recommendation-card {
-  background: #fff;
-  border: 3px solid #111;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.3s ease;
+.recommendation-card, .game-card {
+  background: var(--bg-glass, rgba(18, 18, 22, 0.65));
+  border: 1px solid var(--border-glass, rgba(255, 255, 255, 0.08));
+  border-radius: 20px;
+  padding: 2.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all var(--transition-smooth, 0.4s);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.recommendation-card::before {
+.recommendation-card::before, .game-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #e53935 0%, #c62828 100%);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary, #ff4500), var(--accent-secondary, #e53935));
+  opacity: 0.5;
+  transition: opacity var(--transition-fast, 0.2s);
 }
 
-.recommendation-card:hover::before {
-  transform: scaleX(1);
-}
-
-.recommendation-card:hover {
+.recommendation-card:hover, .game-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(229, 57, 53, 0.25);
-  border-color: #e53935;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 69, 0, 0.15);
+  border-color: var(--accent-primary, #ff4500);
+}
+
+.recommendation-card:hover::before, .game-card:hover::before {
+  opacity: 1;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .insight-card .card-header {
@@ -181,85 +212,95 @@
   gap: 1rem;
 }
 
-.match-score {
+.match-score, .game-prediction {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #111;
-  color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
 }
 
 .score-number {
-  font-size: 1.8rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 2rem;
   font-weight: 900;
-  color: #e53935;
+  color: var(--accent-primary, #ff4500);
+  text-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
 }
 
-.score-label {
-  font-size: 0.7rem;
+.score-label, .prediction-label {
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  opacity: 0.8;
+  color: var(--text-secondary, #a0a0a8);
+  margin-top: 0.3rem;
 }
 
 .trend-badge {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 1px;
+  border: 1px solid;
 }
 
 .trend-badge.positive {
-  background: #4caf50;
-  color: #fff;
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4caf50;
+  color: #4caf50;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.2);
 }
 
 .card-body {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  flex: 1;
 }
 
 .player-name {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #111;
+  color: #fff;
   margin: 0 0 1rem 0;
 }
 
 .player-meta {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.team-badge,
-.position-badge {
-  padding: 0.4rem 1rem;
+.team-badge, .position-badge {
+  padding: 0.4rem 1.2rem;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
+  border: 1px solid;
 }
 
 .team-badge {
-  background: #e53935;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
 .position-badge {
-  background: #111;
-  color: #fff;
+  background: rgba(255, 69, 0, 0.15);
+  border-color: var(--accent-primary, #ff4500);
+  color: var(--accent-primary, #ff4500);
 }
 
 .recommendation-reason {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  color: var(--text-secondary, #a0a0a8);
+  line-height: 1.7;
   margin: 0 0 1.5rem 0;
 }
 
@@ -267,9 +308,10 @@
   display: flex;
   gap: 1rem;
   justify-content: space-around;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .stat-mini {
@@ -279,58 +321,62 @@
 }
 
 .stat-label-mini {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #a0a0a8);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
 }
 
 .stat-value-mini {
-  font-size: 1.3rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.5rem;
   font-weight: 900;
-  color: #e53935;
+  color: var(--accent-primary, #ff4500);
 }
 
-.card-footer {
-  border-top: 2px solid #eee;
-  padding-top: 1rem;
+.card-footer, .game-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  margin-top: auto;
 }
 
-.view-stats-link {
+.view-stats-link, .view-details-link {
   display: inline-block;
-  color: #e53935;
+  color: #fff;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
   font-weight: 700;
   text-decoration: none;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: all var(--transition-fast, 0.2s);
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
 }
 
-.view-stats-link:hover {
-  color: #111;
-  transform: translateX(5px);
+.view-stats-link:hover, .view-details-link:hover {
+  color: var(--accent-primary, #ff4500);
+  border-bottom-color: var(--accent-primary, #ff4500);
+  text-shadow: 0 0 10px var(--accent-glow, rgba(255, 69, 0, 0.5));
 }
 
-.insight-card {
-  position: relative;
-}
-
+/* ----------------------------------
+   Insight & Game Cards
+---------------------------------- */
 .insight-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 15px var(--accent-glow, rgba(255, 69, 0, 0.5)));
 }
 
 .category-badge {
   display: inline-block;
-  padding: 0.4rem 1rem;
-  background: #111;
+  padding: 0.5rem 1.2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -338,200 +384,124 @@
 }
 
 .insight-title {
-  font-size: 1.5rem;
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #111;
+  color: #fff;
   margin: 0 0 1rem 0;
 }
 
 .insight-details {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
-  border-left: 4px solid #e53935;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent-primary, #ff4500);
 }
 
 .details-text {
-  font-size: 0.95rem;
-  color: #111;
-  font-weight: 600;
-  line-height: 1.6;
-  display: block;
-}
-
-.games-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 2rem;
-}
-
-.game-card {
-  background: #fff;
-  border: 3px solid #111;
-  border-radius: 12px;
-  padding: 2rem;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.game-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #111 0%, #333 100%);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.game-card:hover::before {
-  transform: scaleX(1);
-}
-
-.game-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-  border-color: #111;
+  font-size: 1.05rem;
+  color: var(--text-primary, #f0f0f0);
+  line-height: 1.7;
 }
 
 .game-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .game-teams {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.team-name {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #111;
-}
-
-.vs {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #e53935;
-  letter-spacing: 2px;
-}
-
-.game-prediction {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #111;
-  color: #fff;
-  padding: 0.75rem;
-  border-radius: 8px;
-}
-
-.prediction-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  opacity: 0.8;
-  margin-bottom: 0.25rem;
-}
-
-.prediction-value {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #e53935;
-}
-
-.game-body {
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
+.team-name {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.vs {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent-primary, #ff4500);
+  letter-spacing: 2px;
+  background: rgba(255, 69, 0, 0.15);
+  padding: 0.5rem 1rem;
+  border-radius: 50%;
+  border: 1px solid var(--accent-primary, #ff4500);
+}
+
+.prediction-value {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--accent-primary, #ff4500);
+}
+
+.game-body {
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
 .game-date {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #111;
-  margin-bottom: 1rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
 .game-matchup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .matchup-label {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary, #a0a0a8);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .matchup-value {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #111;
+  color: #fff;
 }
 
 .game-reason {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  color: var(--text-secondary, #a0a0a8);
+  line-height: 1.7;
   margin: 0;
-}
-
-.game-footer {
-  border-top: 2px solid #eee;
-  padding-top: 1rem;
-}
-
-.view-details-link {
-  display: inline-block;
-  color: #111;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.view-details-link:hover {
-  color: #e53935;
-  transform: translateX(5px);
 }
 
 @media (max-width: 900px) {
   .recommendations-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
-
   .recommendations-grid,
   .games-grid {
     grid-template-columns: 1fr;
   }
-
-  .category-tabs {
-    flex-direction: column;
-    align-items: center;
-  }
-
   .tab-button {
     width: 100%;
-    max-width: 300px;
+    max-width: 350px;
+    text-align: center;
   }
 }
-

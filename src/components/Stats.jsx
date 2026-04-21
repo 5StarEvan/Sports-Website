@@ -20,7 +20,7 @@ const Stats = () => {
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
   const [favorites, setFavorites] = useState(new Set()); // Track favorites for re-renders
 
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const API_BASE_URL = '/api';
 
   // Load favorites on mount
   useEffect(() => {

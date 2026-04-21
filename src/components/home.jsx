@@ -15,22 +15,22 @@ const BasketballAnimation = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    class Basketball {
+    class GlowingOrb {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 30 + 20;
-        this.speedX = (Math.random() - 0.5) * 2;
-        this.speedY = (Math.random() - 0.5) * 2;
-        this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.05;
-        this.opacity = Math.random() * 0.3 + 0.1;
+        this.size = Math.random() * 6 + 2;
+        this.speedX = (Math.random() - 0.5) * 1.5;
+        this.speedY = (Math.random() - 0.5) * 1.5;
+        this.baseOpacity = Math.random() * 0.5 + 0.2;
+        this.color = Math.random() > 0.5 ? '#ff4500' : '#e53935';
+        this.pulsePhase = Math.random() * Math.PI * 2;
       }
 
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
-        this.rotation += this.rotationSpeed;
+        this.pulsePhase += 0.05;
 
         if (this.x < -this.size) this.x = canvas.width + this.size;
         if (this.x > canvas.width + this.size) this.x = -this.size;
@@ -39,53 +39,49 @@ const BasketballAnimation = () => {
       }
 
       draw() {
+        const currentOpacity = this.baseOpacity + Math.sin(this.pulsePhase) * 0.2;
         ctx.save();
-        ctx.globalAlpha = this.opacity;
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rotation);
-
+        ctx.globalAlpha = currentOpacity;
         ctx.beginPath();
-        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = '#ff6b35';
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
         ctx.fill();
-
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        
-        ctx.beginPath();
-        ctx.moveTo(-this.size, 0);
-        ctx.lineTo(this.size, 0);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, -this.size);
-        ctx.lineTo(0, this.size);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size, -Math.PI / 4, Math.PI / 4);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size, Math.PI * 3 / 4, Math.PI * 5 / 4);
-        ctx.stroke();
-
         ctx.restore();
       }
     }
 
-    const basketballs = [];
-    for (let i = 0; i < 15; i++) {
-      basketballs.push(new Basketball());
+    const orbs = [];
+    for (let i = 0; i < 40; i++) {
+      orbs.push(new GlowingOrb());
     }
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      basketballs.forEach(ball => {
-        ball.update();
-        ball.draw();
+      orbs.forEach(orb => {
+        orb.update();
+        orb.draw();
       });
+
+      // Draw connections
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < orbs.length; i++) {
+        for (let j = i + 1; j < orbs.length; j++) {
+          const dx = orbs[i].x - orbs[j].x;
+          const dy = orbs[i].y - orbs[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(255, 69, 0, ${0.2 * (1 - dist / 150)})`;
+            ctx.moveTo(orbs[i].x, orbs[i].y);
+            ctx.lineTo(orbs[j].x, orbs[j].y);
+            ctx.stroke();
+          }
+        }
+      }
 
       requestAnimationFrame(animate);
     }
