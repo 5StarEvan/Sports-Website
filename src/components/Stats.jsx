@@ -48,14 +48,16 @@ const Stats = () => {
     fetchTeams();
     fetchPositions();
     fetchPlayers();
-  }, [currentPage, searchTerm, selectedTeam, selectedPosition]);
+  }, [currentPage, searchTerm, selectedTeam, selectedPosition, sortBy, sortOrder]);
 
   const fetchPlayers = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '100'  // Show 100 players per page
+        limit: '100',
+        sort_by: sortBy,
+        sort_order: sortOrder,
       });
       
       if (searchTerm) params.append('search', searchTerm);
@@ -122,85 +124,22 @@ const Stats = () => {
     setCurrentPage(1);
   };
 
-  const sortedPlayers = [...players].sort((a, b) => {
-    let aValue, bValue;
-    
-    switch (sortBy) {
-      case 'name':
-        aValue = a.name?.toLowerCase() || '';
-        bValue = b.name?.toLowerCase() || '';
-        break;
-      case 'team':
-        aValue = a.team || '';
-        bValue = b.team || '';
-        break;
-      case 'position':
-        aValue = a.position || '';
-        bValue = b.position || '';
-        break;
-      case 'ppg':
-        aValue = a.stats?.ppg_last || 0;
-        bValue = b.stats?.ppg_last || 0;
-        break;
-      case 'apg':
-        aValue = a.stats?.apg_last || 0;
-        bValue = b.stats?.apg_last || 0;
-        break;
-      case 'rpg':
-        aValue = a.stats?.rpg_last || 0;
-        bValue = b.stats?.rpg_last || 0;
-        break;
-      case 'spg':
-        aValue = a.stats?.spg_last || 0;
-        bValue = b.stats?.spg_last || 0;
-        break;
-      case 'bpg':
-        aValue = a.stats?.bpg_last || 0;
-        bValue = b.stats?.bpg_last || 0;
-        break;
-      case 'fg_pct':
-        aValue = a.stats?.fg_pct_last || 0;
-        bValue = b.stats?.fg_pct_last || 0;
-        break;
-      case 'fg3_pct':
-        aValue = a.stats?.fg3_pct_last || 0;
-        bValue = b.stats?.fg3_pct_last || 0;
-        break;
-      case 'ft_pct':
-        aValue = a.stats?.ft_pct_last || 0;
-        bValue = b.stats?.ft_pct_last || 0;
-        break;
-      case 'games':
-        aValue = a.stats?.games_played || 0;
-        bValue = b.stats?.games_played || 0;
-        break;
-      default:
-        aValue = a.name?.toLowerCase() || '';
-        bValue = b.name?.toLowerCase() || '';
-    }
-    
-    if (typeof aValue === 'string') {
-      if (sortOrder === 'asc') {
-        return aValue.localeCompare(bValue);
-      } else {
-        return bValue.localeCompare(aValue);
-      }
-    } else {
-      if (sortOrder === 'asc') {
-        return aValue - bValue;
-      } else {
-        return bValue - aValue;
-      }
-    }
-  });
+  // Players arrive pre-sorted from the backend
+  const sortedPlayers = players;
 
   const handleSort = (newSortBy) => {
     if (sortBy === newSortBy) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(newSortBy);
-      setSortOrder('asc');
+      // Default descending for stats (highest first), ascending for text fields
+      if (newSortBy === 'name' || newSortBy === 'team' || newSortBy === 'position') {
+        setSortOrder('asc');
+      } else {
+        setSortOrder('desc');
+      }
     }
+    setCurrentPage(1);
   };
 
   if (loading && players.length === 0) {
@@ -449,9 +388,7 @@ const Stats = () => {
               
               <div className="player-info">
                 <div className="player-details">
-                  <span>Age: {player.age}</span>
-                  <span>Height: {Math.floor(player.height / 12)}'{player.height % 12}"</span>
-                  <span>Weight: {player.weight} lbs</span>
+                  <span className="player-age">Age: {player.age}</span>
                 </div>
               </div>
 
@@ -502,17 +439,25 @@ const Stats = () => {
                 <div className="trends-grid">
                   <div className="trend-item">
                     <span className="trend-label">Consistency</span>
-                    <span className="trend-value">{player.trends?.consistency_score?.toFixed(2) || '0.00'}</span>
+                    <span className="trend-value consistency">{player.trends?.consistency_score?.toFixed(2) || '0.00'}</span>
                   </div>
                   <div className="trend-item">
                     <span className="trend-label">PPG Trend</span>
-                    <span className={`trend-value ${(player.trends?.ppg_trend || 0) > 0 ? 'positive' : 'negative'}`}>
+                    <span className={`trend-value ${(player.trends?.ppg_trend || 0) > 0 ? 'positive' : (player.trends?.ppg_trend || 0) < 0 ? 'negative' : 'neutral'}`}>
                       {(player.trends?.ppg_trend || 0) > 0 ? '+' : ''}{player.trends?.ppg_trend?.toFixed(1) || '0.0'}
                     </span>
                   </div>
                   <div className="trend-item">
-                    <span className="trend-label">Games Played</span>
-                    <span className="trend-value">{player.stats?.games_played || 0}</span>
+                    <span className="trend-label">APG Trend</span>
+                    <span className={`trend-value ${(player.trends?.apg_trend || 0) > 0 ? 'positive' : (player.trends?.apg_trend || 0) < 0 ? 'negative' : 'neutral'}`}>
+                      {(player.trends?.apg_trend || 0) > 0 ? '+' : ''}{player.trends?.apg_trend?.toFixed(1) || '0.0'}
+                    </span>
+                  </div>
+                  <div className="trend-item">
+                    <span className="trend-label">RPG Trend</span>
+                    <span className={`trend-value ${(player.trends?.rpg_trend || 0) > 0 ? 'positive' : (player.trends?.rpg_trend || 0) < 0 ? 'negative' : 'neutral'}`}>
+                      {(player.trends?.rpg_trend || 0) > 0 ? '+' : ''}{player.trends?.rpg_trend?.toFixed(1) || '0.0'}
+                    </span>
                   </div>
                 </div>
               </div>

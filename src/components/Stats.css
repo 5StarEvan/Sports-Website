@@ -237,9 +237,9 @@
 ---------------------------------- */
 .players-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 28px;
+  max-width: 1400px;
   margin: 0 auto 40px;
 }
 
@@ -279,12 +279,22 @@
   opacity: 1;
 }
 
+.player-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .player-name {
   font-family: var(--font-heading, 'Outfit', sans-serif);
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  margin-bottom: 12px;
+  margin: 0;
   color: #fff;
+  line-height: 1.2;
+  flex: 1;
+  padding-right: 8px;
 }
 
 .team-badge, .position-badge {
@@ -330,12 +340,40 @@
   color: var(--accent-primary, #ff4500);
 }
 
+/* Player Info */
+.player-info {
+  margin: 10px 0 16px;
+}
+
+.player-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.player-age {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #a0a0a8);
+  background: rgba(255,255,255,0.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
 /* Stats inside Cards */
-.stats-grid, .trends-grid {
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.trends-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 0;
 }
 
 .stat-item, .trend-item {
@@ -347,7 +385,8 @@
 }
 
 .stat-label, .trend-label {
-  font-size: 0.75rem;
+  display: block;
+  font-size: 0.72rem;
   color: var(--text-secondary, #a0a0a8);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -362,8 +401,16 @@
 }
 
 .trend-value {
+  font-family: var(--font-heading, 'Outfit', sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
+  display: block;
+  margin-top: 4px;
+}
+
+.trend-value.consistency {
+  color: #64b5f6;
+  text-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
 }
 
 .trend-value.positive {
@@ -374,6 +421,10 @@
 .trend-value.negative {
   color: var(--accent-secondary, #e53935);
   text-shadow: 0 0 10px rgba(229, 57, 53, 0.3);
+}
+
+.trend-value.neutral {
+  color: var(--text-secondary, #a0a0a8);
 }
 
 /* Favorite Button */

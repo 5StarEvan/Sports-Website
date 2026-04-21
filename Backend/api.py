@@ -30,12 +30,12 @@ def load_nba_data():
     """Load NBA player data from pickle file"""
     global nba_data
     try:
-        with open('nba_2024_25_data.pkl', 'rb') as f:
+        with open('nba_2025_26_data.pkl', 'rb') as f:
             nba_data = pickle.load(f)
         print(f"✅ Loaded {len(nba_data)} NBA players from pickle file")
         return True
     except FileNotFoundError:
-        print("❌ NBA data file 'nba_2024_25_data.pkl' not found.")
+        print("❌ NBA data file 'nba_2025_26_data.pkl' not found.")
         return False
     except Exception as e:
         print(f"❌ Error loading NBA data: {e}")

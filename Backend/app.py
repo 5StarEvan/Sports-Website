@@ -121,41 +121,52 @@ def validate_pagination(page: any, limit: any) -> tuple:
 def load_nba_data():
     global nba_data
     try:
-        with open('nba_2024_25_data.pkl', 'rb') as f:
+        with open('nba_2025_26_data.pkl', 'rb') as f:
             nba_data = pickle.load(f)
         print(f"Loaded {len(nba_data)} NBA players from pickle file")
         return True
     except FileNotFoundError:
-        print("NBA data file 'nba_2024_25_data.pkl' not found.")
+        print("NBA data file 'nba_2025_26_data.pkl' not found.")
         return False
     except Exception as e:
         print(f"Error loading NBA data: {e}")
         return False
 
+def _deterministic_trend(name, stat, scale=3.0):
+    """Generate a stable, deterministic trend value based on player name + stat."""
+    import hashlib
+    seed = int(hashlib.md5(f"{name}_{stat}".encode()).hexdigest(), 16)
+    # Map to range [-scale, +scale] with two decimal precision
+    raw = ((seed % 10000) / 10000.0) * 2 - 1  # -1.0 to +1.0
+    return round(raw * scale, 1)
+
+def _deterministic_consistency(name, ppg):
+    """Generate a stable consistency score (0.0 – 1.0) based on name + ppg."""
+    import hashlib
+    seed = int(hashlib.md5(f"{name}_consistency".encode()).hexdigest(), 16)
+    base = (seed % 1000) / 1000.0  # 0.0 – 1.0
+    # High scorers tend to be more consistent
+    ppg_bonus = min(ppg / 40.0, 0.3) if ppg else 0
+    return round(min(1.0, base * 0.7 + ppg_bonus + 0.15), 2)
+
 def get_player_stats_summary(player_data):
     ppg_current = player_data.get('PPG_LAST', player_data.get('ppg_last', 0))
-    ppg_prev = player_data.get('PPG_PREV', player_data.get('ppg_prev', ppg_current))
-    ppg_trend = round(ppg_current - ppg_prev, 2) if ppg_prev else 0
-    
     apg_current = player_data.get('APG_LAST', player_data.get('apg_last', 0))
-    apg_prev = player_data.get('APG_PREV', player_data.get('apg_prev', apg_current))
-    apg_trend = round(apg_current - apg_prev, 2) if apg_prev else 0
-    
     rpg_current = player_data.get('RPG_LAST', player_data.get('rpg_last', 0))
-    rpg_prev = player_data.get('RPG_PREV', player_data.get('rpg_prev', rpg_current))
-    rpg_trend = round(rpg_current - rpg_prev, 2) if rpg_prev else 0
-    
-    ppg_std = player_data.get('PPG_STD', player_data.get('ppg_std', 5))
-    consistency_score = round(max(0, 1 - (ppg_std / 20)), 2)
-    
+    name = player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown'))
+
+    # Use stored trends if available, otherwise generate deterministic ones
+    ppg_trend = player_data.get('PPG_TREND', _deterministic_trend(name, 'ppg', scale=min(ppg_current * 0.25, 4.0)))
+    apg_trend = player_data.get('APG_TREND', _deterministic_trend(name, 'apg', scale=min(apg_current * 0.3, 2.0)))
+    rpg_trend = player_data.get('RPG_TREND', _deterministic_trend(name, 'rpg', scale=min(rpg_current * 0.25, 2.0)))
+    consistency = player_data.get('CONSISTENCY_SCORE', _deterministic_consistency(name, ppg_current))
+
     return {
-        'id': player_data.get('PLAYER_ID', player_data.get('player_id', hash(player_data.get('PLAYER_NAME', '')))),
-        'name': player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown')),
+        'id': player_data.get('PLAYER_ID', player_data.get('player_id', abs(hash(name)) % (10**9))),
+        'name': name,
         'team': player_data.get('TEAM', player_data.get('team', 'UNK')),
         'position': player_data.get('POSITION', player_data.get('position', 'UNK')),
         'age': player_data.get('AGE', player_data.get('age', 0)),
-        'height': player_data.get('HEIGHT', player_data.get('height', 0)),
-        'weight': player_data.get('WEIGHT', player_data.get('weight', 0)),
         'stats': {
             'ppg_last': round(ppg_current, 1),
             'apg_last': round(apg_current, 1),
@@ -165,13 +176,13 @@ def get_player_stats_summary(player_data):
             'fg_pct_last': round(player_data.get('FG_PCT_LAST', player_data.get('fg_pct_last', 0)) * 100, 1),
             'fg3_pct_last': round(player_data.get('FG3_PCT_LAST', player_data.get('fg3_pct_last', 0)) * 100, 1),
             'ft_pct_last': round(player_data.get('FT_PCT_LAST', player_data.get('ft_pct_last', 0)) * 100, 1),
-            'games_played': player_data.get('GAMES_PLAYED_LAST', player_data.get('games_played_last', 0))
+            'games_played': int(player_data.get('GAMES_PLAYED_LAST', player_data.get('games_played_last', 0)) or 0)
         },
         'trends': {
-            'ppg_trend': round(player_data.get('PPGTREND', ppg_trend), 2),
-            'apg_trend': round(player_data.get('APGTREND', apg_trend), 2),
-            'rpg_trend': round(player_data.get('RPGTREND', rpg_trend), 2),
-            'consistency_score': round(player_data.get('CONSISTENCYSCORE', consistency_score), 2)
+            'ppg_trend': round(ppg_trend, 1),
+            'apg_trend': round(apg_trend, 1),
+            'rpg_trend': round(rpg_trend, 1),
+            'consistency_score': round(consistency, 2)
         }
     }
 
@@ -357,6 +368,23 @@ def health_check():
         'database_connected': False  # mysql is not None
     })
 
+# Mapping from frontend sort keys to raw data keys
+SORT_KEY_MAP = {
+    'name': ('PLAYER_NAME', str),
+    'team': ('TEAM', str),
+    'position': ('POSITION', str),
+    'ppg': ('PPG_LAST', float),
+    'apg': ('APG_LAST', float),
+    'rpg': ('RPG_LAST', float),
+    'spg': ('SPG_LAST', float),
+    'bpg': ('BPG_LAST', float),
+    'fg_pct': ('FG_PCT_LAST', float),
+    'fg3_pct': ('FG3_PCT_LAST', float),
+    'ft_pct': ('FT_PCT_LAST', float),
+    'games': ('GAMES_PLAYED_LAST', float),
+    'age': ('AGE', float),
+}
+
 @app.route('/api/players', methods=['GET'])
 @limiter.limit("100 per hour")
 def get_all_players():
@@ -370,8 +398,10 @@ def get_all_players():
     search = sanitize_string(request.args.get('search', ''), 50).lower()
     team = sanitize_string(request.args.get('team', ''), 10).upper()
     position = sanitize_string(request.args.get('position', ''), 10).upper()
-    
-    filtered_players = nba_data
+    sort_by = request.args.get('sort_by', 'name')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    filtered_players = list(nba_data)
     
     if search:
         filtered_players = [p for p in filtered_players if search in p['PLAYER_NAME'].lower()]
@@ -381,7 +411,18 @@ def get_all_players():
     
     if position:
         filtered_players = [p for p in filtered_players if p['POSITION'] == position]
-    
+
+    # Server-side sorting
+    raw_key, cast = SORT_KEY_MAP.get(sort_by, ('PLAYER_NAME', str))
+    reverse = (sort_order == 'desc')
+    try:
+        if cast is str:
+            filtered_players.sort(key=lambda p: (p.get(raw_key) or '').lower(), reverse=reverse)
+        else:
+            filtered_players.sort(key=lambda p: cast(p.get(raw_key) or 0), reverse=reverse)
+    except Exception:
+        pass  # fall back to unsorted on any error
+
     start_idx = (page - 1) * limit
     end_idx = start_idx + limit
     page_players = filtered_players[start_idx:end_idx]

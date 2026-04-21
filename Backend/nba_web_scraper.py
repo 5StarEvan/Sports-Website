@@ -14,6 +14,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from bs4 import BeautifulSoup
 import re
+from playwright.sync_api import sync_playwright
 
 class NBAWebScraper:
     """Web scraper for NBA player statistics"""
@@ -32,36 +33,57 @@ class NBAWebScraper:
         self.session = requests.Session()
         self.session.headers.update(self.headers)
         
-    def get_player_stats_page(self, season='2024-25'):
-        """Get the main player stats page"""
+    def get_player_stats_page(self, season='2025-26'):
+        """Get the main player stats page using Playwright"""
         try:
-            # Try different Basketball Reference endpoints
             urls_to_try = [
+                "https://www.basketball-reference.com/leagues/NBA_2026_per_game.html",
                 "https://www.basketball-reference.com/leagues/NBA_2025_per_game.html",
                 "https://www.basketball-reference.com/leagues/NBA_2024_per_game.html",
-                "https://www.basketball-reference.com/leagues/NBA_2023_per_game.html",
             ]
             
-            for url in urls_to_try:
-                try:
-                    print(f"Trying URL: {url}")
-                    response = self.session.get(url, timeout=30)
-                    if response.status_code == 200:
-                        print(f"✅ Successfully accessed: {url}")
-                        return response.text
-                    else:
-                        print(f"❌ Failed with status {response.status_code}: {url}")
-                except Exception as e:
-                    print(f"❌ Error accessing {url}: {e}")
-                    continue
-            
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                for url in urls_to_try:
+                    try:
+                        print(f"Trying URL with Playwright: {url}")
+                        page = browser.new_page()
+                        # Some sites block requests missing a standard UA
+                        page.set_extra_http_headers({
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                        })
+                        response = page.goto(url, timeout=30000)
+                        
+                        if response and response.status == 200:
+                            print(f"✅ Successfully accessed: {url}")
+                            # Wait for the table to load
+                            try:
+                                page.wait_for_selector("table#per_game_stats", timeout=10000)
+                            except Exception as e:
+                                print("Table didn't load in time, but proceeding with HTML anyway.")
+                            
+                            html_content = page.content()
+                            browser.close()
+                            return html_content
+                        else:
+                            status = response.status if response else 'None'
+                            print(f"❌ Failed with status {status}: {url}")
+                    except Exception as e:
+                        print(f"❌ Error accessing {url}: {e}")
+                    finally:
+                        try:
+                            page.close()
+                        except:
+                            pass
+                
+                browser.close()
             return None
             
         except Exception as e:
-            print(f"Error getting player stats page: {e}")
+            print(f"Error getting player stats page with Playwright: {e}")
             return None
     
-    def scrape_player_stats(self, season='2024-25'):
+    def scrape_player_stats(self, season='2025-26'):
         """Scrape player statistics from NBA.com"""
         print(f"🏀 Scraping NBA player stats for {season} season...")
         
@@ -456,14 +478,14 @@ class NBAWebScraper:
         print(f"✅ Created realistic mock data for {len(players_data)} players")
         return players_data
     
-    def save_data(self, data, filename='nba_2024_25_data.pkl'):
+    def save_data(self, data, filename='nba_2025_26_data.pkl'):
         """Save scraped data to file"""
         filepath = os.path.join(os.path.dirname(__file__), filename)
         with open(filepath, 'wb') as f:
             pickle.dump(data, f)
         print(f"Data saved to {filepath}")
     
-    def load_data(self, filename='nba_2024_25_data.pkl'):
+    def load_data(self, filename='nba_2025_26_data.pkl'):
         """Load data from file"""
         filepath = os.path.join(os.path.dirname(__file__), filename)
         if os.path.exists(filepath):
@@ -484,7 +506,7 @@ def test_scraper():
     
     if data is None:
         print("No existing data found. Scraping new data...")
-        data = scraper.scrape_player_stats('2024-25')
+        data = scraper.scrape_player_stats('2025-26')
         
         if data:
             scraper.save_data(data)

@@ -74,7 +74,7 @@ class NBAAISystem:
         print("Initializing NBA AI System...")
         
         # Check if data exists
-        data_file = os.path.join(os.path.dirname(__file__), 'nba_2024_25_data.pkl')
+        data_file = os.path.join(os.path.dirname(__file__), 'nba_2025_26_data.pkl')
         model_file = os.path.join(os.path.dirname(__file__), 'nba_ai_model.pkl')
         
         if os.path.exists(data_file) and os.path.exists(model_file) and not force_refresh:
@@ -87,16 +87,15 @@ class NBAAISystem:
                 print("❌ Failed to load model")
                 return False
         else:
-            print("❌ No existing data or model found")
-            return False
+            print("No existing data or model found, proceeding to train.")
         
         # Scrape new data
-        print("🔄 Scraping NBA data for 2024-25 season...")
-        self.data = self.scraper.scrape_player_stats('2024-25')
+        print("🔄 Scraping NBA data for 2025-26 season...")
+        self.data = self.scraper.scrape_player_stats('2025-26')
         
         if not self.data:
             print("❌ Failed to scrape NBA data")
-        return False
+            return False
         
         # Save data
         self.scraper.save_data(self.data)
