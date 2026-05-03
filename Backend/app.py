@@ -1,7 +1,5 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import pickle
 import json
 import os
@@ -34,26 +32,12 @@ CORS(app, resources={
     }
 })
 
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
-)
-
 SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['SECRET_KEY'] = SECRET_KEY
 
 TOKEN_EXPIRY_HOURS = 24
 active_tokens = {}
 
-# mysql = None
-# try:
-#     mysql = init_db(app)
-#     print("Database connection configured successfully")
-# except Exception as e:
-#     print(f"Database initialization error: {e}")
-#     mysql = None
 mysql = None
 
 nba_data = None
@@ -136,16 +120,14 @@ def _deterministic_trend(name, stat, scale=3.0):
     """Generate a stable, deterministic trend value based on player name + stat."""
     import hashlib
     seed = int(hashlib.md5(f"{name}_{stat}".encode()).hexdigest(), 16)
-    # Map to range [-scale, +scale] with two decimal precision
-    raw = ((seed % 10000) / 10000.0) * 2 - 1  # -1.0 to +1.0
+    raw = ((seed % 10000) / 10000.0) * 2 - 1
     return round(raw * scale, 1)
 
 def _deterministic_consistency(name, ppg):
     """Generate a stable consistency score (0.0 – 1.0) based on name + ppg."""
     import hashlib
     seed = int(hashlib.md5(f"{name}_consistency".encode()).hexdigest(), 16)
-    base = (seed % 1000) / 1000.0  # 0.0 – 1.0
-    # High scorers tend to be more consistent
+    base = (seed % 1000) / 1000.0
     ppg_bonus = min(ppg / 40.0, 0.3) if ppg else 0
     return round(min(1.0, base * 0.7 + ppg_bonus + 0.15), 2)
 
@@ -155,7 +137,6 @@ def get_player_stats_summary(player_data):
     rpg_current = player_data.get('RPG_LAST', player_data.get('rpg_last', 0))
     name = player_data.get('PLAYER_NAME', player_data.get('player_name', 'Unknown'))
 
-    # Use stored trends if available, otherwise generate deterministic ones
     ppg_trend = player_data.get('PPG_TREND', _deterministic_trend(name, 'ppg', scale=min(ppg_current * 0.25, 4.0)))
     apg_trend = player_data.get('APG_TREND', _deterministic_trend(name, 'apg', scale=min(apg_current * 0.3, 2.0)))
     rpg_trend = player_data.get('RPG_TREND', _deterministic_trend(name, 'rpg', scale=min(rpg_current * 0.25, 2.0)))
@@ -194,80 +175,14 @@ def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 
-# @app.route('/api/auth/signup', methods=['POST'])
-# @limiter.limit("5 per hour")
-# def signup():
-#     if not mysql:
-#         return jsonify({
-#             'success': False,
-#             'message': 'Database connection not available'
-#         }), 500
-    
-#     try:
-#         success, user, message = create_user_from_json(mysql)
-        
-#         if success:
-#             token = create_token(user['id'])
-#             return jsonify({
-#                 'success': True,
-#                 'user': user,
-#                 'token': token,
-#                 'message': message
-#             }), 201
-#         else:
-#             return jsonify({
-#                 'success': False,
-#                 'message': message
-#             }), 400
-#     except Exception as e:
-#         print(f"Signup error: {e}")
-#         return jsonify({
-#             'success': False,
-#             'message': 'An error occurred while creating your account'
-#         }), 500
-
 @app.route('/api/auth/signup', methods=['POST'])
-@limiter.limit("5 per hour")
 def signup():
     return jsonify({
         'success': False,
         'message': 'Database connection not available'
     }), 503
 
-# @app.route('/api/auth/login', methods=['POST'])
-# @limiter.limit("10 per hour")
-# def login():
-#     if not mysql:
-#         return jsonify({
-#             'success': False,
-#             'message': 'Database connection not available'
-#         }), 500
-    
-#     try:
-#         success, user, message = authenticate_user_from_json(mysql)
-        
-#         if success:
-#             token = create_token(user['id'])
-#             return jsonify({
-#                 'success': True,
-#                 'user': user,
-#                 'token': token,
-#                 'message': message
-#             }), 200
-#         else:
-#             return jsonify({
-#                 'success': False,
-#                 'message': message
-#             }), 401
-#     except Exception as e:
-#         print(f"Login error: {e}")
-#         return jsonify({
-#             'success': False,
-#             'message': 'An error occurred while logging in'
-#         }), 500
-
 @app.route('/api/auth/login', methods=['POST'])
-@limiter.limit("10 per hour")
 def login():
     return jsonify({
         'success': False,
@@ -277,7 +192,6 @@ def login():
 @app.route('/api/auth/logout', methods=['POST'])
 @require_auth
 def logout():
-
     auth_header = request.headers.get('Authorization')
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
@@ -288,48 +202,6 @@ def logout():
         'message': 'Logged out successfully'
     }), 200
 
-# @app.route('/api/auth/verify', methods=['GET'])
-# def verify():
-#     if not mysql:
-#         return jsonify({
-#             'authenticated': False,
-#             'message': 'Database connection not available'
-#         }), 500
-    
-#     try:
-#         auth_header = request.headers.get('Authorization')
-#         if not auth_header or not auth_header.startswith('Bearer '):
-#             return jsonify({
-#                 'authenticated': False,
-#                 'message': 'No token provided'
-#             }), 401
-        
-#         token = auth_header.split(' ')[1]
-#         user_id = validate_token(token)
-        
-#         if not user_id:
-#             return jsonify({
-#                 'authenticated': False,
-#                 'message': 'Invalid or expired token'
-#             }), 401
-        
-#         user = get_user_by_id(mysql, user_id)
-#         if user:
-#             return jsonify({
-#                 'authenticated': True,
-#                 'user': user
-#             }), 200
-        
-#         return jsonify({
-#             'authenticated': False,
-#             'message': 'User not found'
-#         }), 401
-#     except Exception as e:
-#         print(f"Verify error: {e}")
-#         return jsonify({
-#             'authenticated': False,
-#             'message': 'Error verifying token'
-#         }), 500
 @app.route('/api/auth/verify', methods=['GET'])
 def verify():
     return jsonify({
@@ -365,10 +237,9 @@ def health_check():
         'message': 'NBA API server is running',
         'ai_available': AI_AVAILABLE,
         'players_loaded': len(nba_data) if nba_data else 0,
-        'database_connected': False  # mysql is not None
+        'database_connected': False
     })
 
-# Mapping from frontend sort keys to raw data keys
 SORT_KEY_MAP = {
     'name': ('PLAYER_NAME', str),
     'team': ('TEAM', str),
@@ -386,7 +257,6 @@ SORT_KEY_MAP = {
 }
 
 @app.route('/api/players', methods=['GET'])
-@limiter.limit("100 per hour")
 def get_all_players():
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
@@ -412,7 +282,6 @@ def get_all_players():
     if position:
         filtered_players = [p for p in filtered_players if p['POSITION'] == position]
 
-    # Server-side sorting
     raw_key, cast = SORT_KEY_MAP.get(sort_by, ('PLAYER_NAME', str))
     reverse = (sort_order == 'desc')
     try:
@@ -421,7 +290,7 @@ def get_all_players():
         else:
             filtered_players.sort(key=lambda p: cast(p.get(raw_key) or 0), reverse=reverse)
     except Exception:
-        pass  # fall back to unsorted on any error
+        pass
 
     start_idx = (page - 1) * limit
     end_idx = start_idx + limit
@@ -445,7 +314,6 @@ def get_all_players():
     })
 
 @app.route('/api/players/<int:player_id>', methods=['GET'])
-@limiter.limit("200 per hour")
 def get_player_by_id(player_id):
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
@@ -460,7 +328,6 @@ def get_player_by_id(player_id):
     return jsonify(get_player_stats_summary(player))
 
 @app.route('/api/players/search/<string:player_name>', methods=['GET'])
-@limiter.limit("100 per hour")
 def search_player(player_name):
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
@@ -478,7 +345,6 @@ def search_player(player_name):
     return jsonify({'players': players_summary})
 
 @app.route('/api/teams', methods=['GET'])
-@limiter.limit("100 per hour")
 def get_teams():
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
@@ -488,7 +354,6 @@ def get_teams():
     return jsonify({'teams': teams})
 
 @app.route('/api/positions', methods=['GET'])
-@limiter.limit("100 per hour")
 def get_positions():
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
@@ -498,7 +363,6 @@ def get_positions():
     return jsonify({'positions': positions})
 
 @app.route('/api/ai-predictions', methods=['GET'])
-@limiter.limit("20 per hour")
 def get_ai_predictions():
     if not AI_AVAILABLE:
         return jsonify({
@@ -541,7 +405,6 @@ def get_ai_predictions():
         }), 500
 
 @app.route('/api/player-prediction/<string:player_name>', methods=['GET'])
-@limiter.limit("30 per hour")
 def get_player_prediction_api(player_name):
     if not AI_AVAILABLE:
         return jsonify({
@@ -567,7 +430,6 @@ def get_player_prediction_api(player_name):
         }), 500
 
 @app.route('/api/stats/leaders', methods=['GET'])
-@limiter.limit("100 per hour")
 def get_stat_leaders():
     if not nba_data:
         return jsonify({'error': 'NBA data not loaded'}), 500
