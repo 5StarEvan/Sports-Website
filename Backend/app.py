@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from functools import wraps
-# from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id
+from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id, get_saved_players, save_player, remove_saved_player
 
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
@@ -177,18 +177,28 @@ def add_security_headers(response):
 
 @app.route('/api/auth/signup', methods=['POST'])
 def signup():
-    return jsonify({
-        'success': False,
-        'message': 'Database connection not available'
-    }), 503
-
+    try:
+        success, user, message = create_user_from_json()
+        if success:
+            token = create_token(user['id'])
+            return jsonify({'success': True, 'user': user, 'token': token, 'message': message}), 201
+        return jsonify({'success': False, 'message': message}), 400
+    except Exception as e:
+        print(f"Signup error: {e}")
+        return jsonify({'success': False, 'message': 'Error creating account'}), 500
+ 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    return jsonify({
-        'success': False,
-        'message': 'Database connection not available'
-    }), 503
-
+    try:
+        success, user, message = authenticate_user_from_json()
+        if success:
+            token = create_token(user['id'])
+            return jsonify({'success': True, 'user': user, 'token': token, 'message': message}), 200
+        return jsonify({'success': False, 'message': message}), 401
+    except Exception as e:
+        print(f"Login error: {e}")
+        return jsonify({'success': False, 'message': 'Error logging in'}), 500
+ 
 @app.route('/api/auth/logout', methods=['POST'])
 @require_auth
 def logout():
@@ -196,19 +206,45 @@ def logout():
     if auth_header and auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
         invalidate_token(token)
-    
-    return jsonify({
-        'success': True,
-        'message': 'Logged out successfully'
-    }), 200
-
+    return jsonify({'success': True, 'message': 'Logged out successfully'}), 200
+ 
 @app.route('/api/auth/verify', methods=['GET'])
+@require_auth
 def verify():
-    return jsonify({
-        'authenticated': False,
-        'message': 'Database connection not available'
-    }), 503
-
+    user = get_user_by_id(request.user_id)
+    if user:
+        return jsonify({'authenticated': True, 'user': user}), 200
+    return jsonify({'authenticated': False, 'message': 'User not found'}), 401
+ 
+# ── Saved players routes ─────────────────────────────────────────────────────
+ 
+@app.route('/api/players/saved', methods=['GET'])
+@require_auth
+def get_saved():
+    players = get_saved_players(request.user_id)
+    return jsonify({'success': True, 'saved_players': players}), 200
+ 
+@app.route('/api/players/saved', methods=['POST'])
+@require_auth
+def add_saved():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+    player_id   = data.get('player_id')
+    player_name = data.get('player_name', '')
+    team        = data.get('team', '')
+    position    = data.get('position', '')
+    if not player_id:
+        return jsonify({'success': False, 'message': 'player_id is required'}), 400
+    success, message = save_player(request.user_id, player_id, player_name, team, position)
+    return jsonify({'success': success, 'message': message}), 200 if success else 500
+ 
+@app.route('/api/players/saved/<int:player_id>', methods=['DELETE'])
+@require_auth
+def delete_saved(player_id):
+    success, message = remove_saved_player(request.user_id, player_id)
+    return jsonify({'success': success, 'message': message}), 200 if success else 500
+ 
 @app.route('/', methods=['GET'])
 def root():
     return jsonify({
@@ -566,6 +602,7 @@ if __name__ == '__main__':
         print("Press Ctrl+C to stop")
         print("="*50 + "\n")
         
+        init_db()
         app.run(debug=False, host='0.0.0.0', port=5000, threaded=True)
         
     except KeyboardInterrupt:
