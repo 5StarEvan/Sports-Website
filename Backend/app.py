@@ -12,6 +12,10 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from functools import wraps
 from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id, get_saved_players, save_player, remove_saved_player
+from live_games import get_todays_games, get_upcoming_games
+
+
+
 
 try:
     from nba_ai_system import get_top_scorers, get_top_assists, get_top_rebounders, get_breakout_players, get_player_prediction, initialize_nba_ai
@@ -88,6 +92,53 @@ def sanitize_string(value: str, max_length: int = 100) -> str:
     if not isinstance(value, str):
         return ""
     return value[:max_length].strip()
+
+
+# ── Replace the live games routes in app.py with these ──────────────────────
+# Import at top of app.py:
+#   from live_games import get_todays_games, get_upcoming_games, get_top_pra_player
+
+@app.route('/api/games/today', methods=['GET'])
+def get_today_games():
+    try:
+        games = get_todays_games(nba_data=nba_data)
+        return jsonify({'games': games, 'count': len(games)}), 200
+    except Exception as e:
+        print(f"Error fetching today's games: {e}")
+        return jsonify({'error': 'Failed to fetch games', 'games': []}), 500
+
+@app.route('/api/games/upcoming', methods=['GET'])
+def get_upcoming():
+    try:
+        days = int(request.args.get('days', 7))
+        games = get_upcoming_games(days=min(days, 14), nba_data=nba_data)
+        return jsonify({'games': games, 'count': len(games)}), 200
+    except Exception as e:
+        print(f"Error fetching upcoming games: {e}")
+        return jsonify({'error': 'Failed to fetch upcoming games', 'games': []}), 500
+
+@app.route('/api/games/<string:game_id>', methods=['GET'])
+def get_game_detail(game_id):
+    try:
+        games = get_todays_games(nba_data=nba_data)
+        game = next((g for g in games if g['gameId'] == game_id), None)
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        return jsonify(game), 200
+    except Exception as e:
+        print(f"Error fetching game detail: {e}")
+        return jsonify({'error': 'Failed to fetch game'}), 500
+
+@app.route('/api/stats/top-pra', methods=['GET'])
+def get_top_pra():
+    try:
+        player = get_top_pra_player(nba_data)
+        if not player:
+            return jsonify({'error': 'No data available'}), 404
+        return jsonify(player), 200
+    except Exception as e:
+        print(f"Error fetching top PRA: {e}")
+        return jsonify({'error': 'Failed to fetch top PRA player'}), 500
 
 def validate_pagination(page: any, limit: any) -> tuple:
     try:
