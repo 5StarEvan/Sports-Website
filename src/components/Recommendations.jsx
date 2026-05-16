@@ -8,89 +8,44 @@ const Recommendations = () => {
   const insights = [
     {
       id: 1,
-      title: 'Rising Stars Alert',
+      title: 'Rising Stars',
       category: 'Trending',
       description: 'Young players showing exceptional growth this season with significant stat improvements',
       icon: '📈',
-      details: 'Players under 25 averaging 20+ PPG increased by 15% this season',
-      link: '/stats'
+      details: 'Biggest predicted PRA jumps for players next season',
+      link: '/recommendations/PRA'
     },
+
     {
       id: 2,
-      title: 'Defensive Powerhouses',
-      category: 'Analysis',
-      description: 'Teams with the best defensive ratings and their impact on game outcomes',
-      icon: '🛡️',
-      details: 'Top 5 defensive teams have 78% win rate in close games',
-      link: '/stats'
+      title: 'Bucket Getters',
+      category: 'Trending',
+      description: 'Young players showing exceptional growth this season with significant PPG improvements',
+      icon: '📈',
+      details: 'Biggest predicted PPG jumps for players next season',
+      link: '/recommendations/PPG'
     },
+
     {
       id: 3,
-      title: 'Three-Point Revolution',
+      title: 'Assist Leaders',
       category: 'Trending',
-      description: 'Teams increasing 3-point attempts and their correlation with wins',
-      icon: '🎯',
-      details: 'Teams shooting 35%+ from 3-point range win 65% more games',
-      link: '/stats'
+      description: 'Young players showing exceptional growth this season with significant APG improvements',
+      icon: '📈',
+      details: 'Biggest predicted APG jumps for players next season',
+      link: '/recommendations/APG'
     },
+
     {
       id: 4,
-      title: 'Clutch Performance',
-      category: 'Analysis',
-      description: 'Players with the best performance in the final 5 minutes of close games',
-      icon: '⏰',
-      details: 'Top clutch players average 8.5 PPG in final 5 minutes',
-      link: '/stats'
-    },
-    {
-      id: 5,
-      title: 'Injury Impact Analysis',
-      category: 'Insight',
-      description: 'How key player injuries affect team performance and betting lines',
-      icon: '🏥',
-      details: 'Teams missing star players see 12% drop in offensive efficiency',
-      link: '/stats'
-    },
-    {
-      id: 6,
-      title: 'Home Court Advantage',
-      category: 'Analysis',
-      description: 'Statistical breakdown of home vs away performance across the league',
-      icon: '🏠',
-      details: 'Home teams win 58% of games with 4.2 PPG advantage on average',
-      link: '/stats'
+      title: 'Rebound Leaders',
+      category: 'Trending',
+      description: 'Young players showing exceptional growth this season with significant RPG improvements',
+      icon: '📈',
+      details: 'Biggest predicted RPG jumps for players next season',
+      link: '/recommendations/RPG'
     }
-  ];
-
-  const upcomingGames = [
-    {
-      id: 1,
-      team1: 'Lakers',
-      team2: 'Warriors',
-      date: 'Tonight 8:00 PM EST',
-      prediction: 'Lakers 65%',
-      reason: 'Home court advantage and recent form',
-      keyMatchup: 'LeBron vs Curry'
-    },
-    {
-      id: 2,
-      team1: 'Celtics',
-      team2: 'Heat',
-      date: 'Tomorrow 7:30 PM EST',
-      prediction: 'Celtics 58%',
-      reason: 'Strong defensive matchup expected',
-      keyMatchup: 'Tatum vs Butler'
-    },
-    {
-      id: 3,
-      team1: 'Bucks',
-      team2: 'Nuggets',
-      date: 'Friday 9:00 PM EST',
-      prediction: 'Bucks 52%',
-      reason: 'Close matchup, slight edge to home team',
-      keyMatchup: 'Giannis vs Jokić'
-    }
-  ];
+  ]
 
   return (
     <div className="recommendations-wrapper">
@@ -112,12 +67,6 @@ const Recommendations = () => {
             onClick={() => setSelectedCategory('players')}
           >
             Insights & Analysis
-          </button>
-          <button
-            className={`tab-button ${selectedCategory === 'games' ? 'active' : ''}`}
-            onClick={() => setSelectedCategory('games')}
-          >
-            Upcoming Games
           </button>
         </div>
 
