@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 from functools import wraps
 from db import init_db, create_user_from_json, authenticate_user_from_json, get_user_by_id, get_saved_players, save_player, remove_saved_player
 from live_games import get_todays_games, get_upcoming_games
+from recommendations import get_top_performers
 
 
 
@@ -538,6 +539,24 @@ def get_stat_leaders():
         'apg_leaders': format_leaders(apg_leaders, 'APG_LAST', 'Assists Per Game'),
         'rpg_leaders': format_leaders(rpg_leaders, 'RPG_LAST', 'Rebounds Per Game')
     })
+
+@app.route('/api/recommendations/<stat>', methods=['GET'])
+def recommendations(stat):
+    if not AI_AVAILABLE:
+        return jsonify({'error': 'AI predictions not available', 'ai_available': False}), 503
+
+    stat_clean = sanitize_string(stat, 10).upper()
+    if stat_clean not in ('PPG', 'APG', 'RPG', 'PRA'):
+        return jsonify({'error': 'Invalid stat. Use PPG, APG, RPG, or PRA.'}), 400
+
+    try:
+        data = get_top_performers(stat_clean)
+        return jsonify(data), 200
+    except Exception as e:
+        print(f"Error in recommendations: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     frontend_process = None
