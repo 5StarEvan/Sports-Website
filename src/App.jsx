@@ -6,6 +6,7 @@ import Favourites from "./components/Favourites.jsx";
 import Login from "./components/Login.jsx";
 import SignUp from "./components/SignUp.jsx";
 import LiveGames from "./components/LiveGames.jsx"; // adjust path
+import RecommendationChart from "./components/RecommendationChart.jsx";
 
 
 function App() {
@@ -19,6 +20,10 @@ function App() {
         <Route path="/login" element={<Login/>} />
         <Route path="/create-account" element={<SignUp/>} />
         <Route path="/games" element={<LiveGames />} />
+        <Route
+          path="/recommendations/:stat"
+          element={<RecommendationChart />}
+        />
       </Routes>
     </Router>
   );
